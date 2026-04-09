@@ -203,9 +203,9 @@ export default function AirCanvas() {
         canvas.height = video.videoHeight;
       }
 
-      // Game Grid Physical Constraints
-      const GRID_SIZE = canvas.height * 0.7;
-      const gridX = 50;
+      // Responsive Game Grid Physical Constraints (Adapts to Mobile Portrait or Desktop Landscape)
+      const GRID_SIZE = Math.min(canvas.width, canvas.height) * 0.8;
+      const gridX = (canvas.width - GRID_SIZE) / 2;
       const gridY = (canvas.height - GRID_SIZE) / 2;
       const cellW = GRID_SIZE / 3;
 
