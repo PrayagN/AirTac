@@ -112,14 +112,29 @@ export default function AirCanvas() {
         }
 
         // 1. Immediately request camera so browser ties it precisely to the user's click interaction
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                width: { ideal: 1280 }, 
-                height: { ideal: 720 }, 
-                facingMode: "user" 
-            }, 
-            audio: true 
-        });
+        let stream;
+        try {
+            // Attempt 1: Full ideal resolution and audio
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
+                audio: true 
+            });
+        } catch (e1) {
+            console.warn("Attempt 1 (A+V) failed, trying Video only...", e1);
+            try {
+                // Attempt 2: Strict Audio blocks (iOS Microphone limits) cause NotAllowedError. Try Video only!
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
+                    audio: false 
+                });
+                setIsAudioOn(false); // Notify state that audio is permanently disabled
+            } catch (e2) {
+                console.warn("Attempt 2 (Ideal Video) failed, trying Barebones Video...", e2);
+                // Attempt 3: Strict constraints might still trigger OverconstrainedError. Try barebones!
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                setIsAudioOn(false);
+            }
+        }
         
         // 2. Camera succeeded! Now fetch AI models safely
         const vision = await FilesetResolver.forVisionTasks(
