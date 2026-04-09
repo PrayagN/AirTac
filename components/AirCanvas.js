@@ -18,6 +18,7 @@ export default function AirCanvas() {
 
   // Game State
   const [myRole, setMyRole] = useState('X');
+  const [currentTurn, setCurrentTurn] = useState('X');
   const [winner, setWinner] = useState(null);
   const [eraseRequest, setEraseRequest] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -66,6 +67,8 @@ export default function AirCanvas() {
   useEffect(() => { showGridRef.current = showGrid; }, [showGrid]);
   const roleRef = useRef(myRole);
   useEffect(() => { roleRef.current = myRole; }, [myRole]);
+  const turnRef = useRef(currentTurn);
+  useEffect(() => { turnRef.current = currentTurn; }, [currentTurn]);
   const winnerRef = useRef(winner);
 
   const checkWinnerLocal = (board) => {
@@ -511,12 +514,18 @@ export default function AirCanvas() {
 
                     if (isBoardMove && detectedShape) {
                       cleanArea(minX, maxX, minY, maxY);
-                      if (detectedShape !== roleRef.current) {
+                      
+                      const isInCallCheck = dataConnRef.current && dataConnRef.current.open;
+                      
+                      if (isInCallCheck && roleRef.current !== turnRef.current) {
+                          showToast(`⚠ NOT YOUR TURN! Waiting for Player ${turnRef.current}...`);
+                      } else if (detectedShape !== roleRef.current) {
                         showToast(`⚠ RULE ERROR: You are Player ${roleRef.current}, but you drew a ${detectedShape}!`);
                       } else if (boardRef.current[cellIdx] !== null) {
                         showToast(`⚠ RULE ERROR: This block is already occupied!`);
                       } else {
                         boardRef.current[cellIdx] = detectedShape;
+                        setCurrentTurn(detectedShape === 'X' ? 'O' : 'X');
                         if (dataConnRef.current && dataConnRef.current.open) {
                           dataConnRef.current.send({ type: 'MOVE', cell: cellIdx, role: detectedShape });
                         }
@@ -616,11 +625,16 @@ export default function AirCanvas() {
         remoteLinesRef.current = payload.data;
       } else if (payload.type === 'MOVE') {
         boardRef.current[payload.cell] = payload.role;
+        setCurrentTurn(payload.role === 'X' ? 'O' : 'X');
         checkWinnerLocal(boardRef.current);
       } else if (payload.type === 'BOARD_RESET') {
         boardRef.current = Array(9).fill(null);
         setWinner(null);
         winnerRef.current = null;
+        setCurrentTurn('X');
+      } else if (payload.type === 'ROLE_SYNC') {
+        setMyRole(payload.role);
+        showToast(`Roles updated! You are now Player ${payload.role}`);
       } else if (payload.type === 'ERASE_REQUEST') {
         setEraseRequest(true);
       } else if (payload.type === 'EMOJI') {
@@ -644,9 +658,20 @@ export default function AirCanvas() {
     boardRef.current = Array(9).fill(null);
     setWinner(null);
     winnerRef.current = null;
+    setCurrentTurn('X');
     if (dataConnRef.current && dataConnRef.current.open) {
       dataConnRef.current.send({ type: 'BOARD_RESET' });
     }
+  };
+
+  const handleRoleSwitch = () => {
+      const newRole = myRole === 'X' ? 'O' : 'X';
+      setMyRole(newRole);
+      if (dataConnRef.current && dataConnRef.current.open) {
+          const oppositeRole = newRole === 'X' ? 'O' : 'X';
+          dataConnRef.current.send({ type: 'ROLE_SYNC', role: oppositeRole });
+          showToast(`Synced! Opponent forced to Player ${oppositeRole}`);
+      }
   };
 
   const toggleVideo = () => {
@@ -738,6 +763,12 @@ export default function AirCanvas() {
                 <span style={{ color: '#f0f' }}>{remoteName || 'Waiting for opponent...'}</span>
              </div>
              
+             {showGrid && isInCall && !winner && (
+                 <div style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f', marginTop: '10px', fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none' }}>
+                     {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
+                 </div>
+             )}
+
              {!isInCall && (
                  <button className={styles.inviteButton} onClick={copyInviteLink}>
                      🔗 Copy Invite Link
@@ -828,7 +859,7 @@ export default function AirCanvas() {
           <button 
              className={styles.controlBtn} 
              style={{ border: myRole === 'X' ? '2px solid #39ff14' : '2px solid #0ff', width: '60px', borderRadius: '15px', fontSize: '1.2rem', fontWeight: 'bold' }} 
-             onClick={() => setMyRole(myRole === 'X' ? 'O' : 'X')}
+             onClick={handleRoleSwitch}
              title="Switch Role"
           >
              {myRole}
