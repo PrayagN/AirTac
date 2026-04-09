@@ -35,6 +35,28 @@ export default function AirCanvas() {
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [floatingEmojis, setFloatingEmojis] = useState([]);
 
+  // Invite & Player Info States
+  const [localName, setLocalName] = useState('');
+  const [remoteName, setRemoteName] = useState('');
+  const [joinRoomId, setJoinRoomId] = useState(null);
+
+  const localNameRef = useRef('');
+  useEffect(() => { localNameRef.current = localName; }, [localName]);
+  
+  const joinRoomIdRef = useRef(null);
+
+  useEffect(() => {
+     if (typeof window !== 'undefined') {
+         const urlParams = new URLSearchParams(window.location.search);
+         const room = urlParams.get('room');
+         if (room) {
+             setJoinRoomId(room);
+             joinRoomIdRef.current = room;
+             setRemotePeerId(room);
+         }
+     }
+  }, []);
+
   const isPinchingRef = useRef(false);
   const needsSyncRef = useRef(false);
   const erasePendingRef = useRef(false);
@@ -131,7 +153,14 @@ export default function AirCanvas() {
     const initializePeer = (localStream) => {
       const peer = new Peer();
       peerRef.current = peer;
-      peer.on('open', (id) => setPeerId(id));
+      peer.on('open', (id) => {
+          setPeerId(id);
+          if (joinRoomIdRef.current) {
+              setTimeout(() => {
+                  connectToPeerId(joinRoomIdRef.current, localStream);
+              }, 500);
+          }
+      });
       peer.on('call', (call) => {
         call.answer(localStream);
         setupCallResponses(call);
@@ -527,18 +556,21 @@ export default function AirCanvas() {
     };
   }, []);
 
-  const connectToPeer = () => {
-    if (!remotePeerId || !peerRef.current || !videoRef.current.srcObject) return;
-    const localStream = videoRef.current.srcObject;
-    const call = peerRef.current.call(remotePeerId, localStream);
-
+  const connectToPeerId = (targetId, stream) => {
+    if (!targetId || !peerRef.current || !stream) return;
+    const call = peerRef.current.call(targetId, stream);
+    
     call.on('stream', (remoteStream) => {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
     });
 
-    const conn = peerRef.current.connect(remotePeerId);
+    const conn = peerRef.current.connect(targetId);
     setupDataConnection(conn);
     setIsInCall(true);
+  };
+
+  const connectToPeer = () => {
+     connectToPeerId(remotePeerId, videoRef.current?.srcObject);
   };
 
   const setupCallResponses = (call) => {
@@ -549,10 +581,15 @@ export default function AirCanvas() {
   };
 
   const setupDataConnection = (conn) => {
-    conn.on('open', () => { dataConnRef.current = conn; });
+    conn.on('open', () => { 
+        dataConnRef.current = conn; 
+        conn.send({ type: 'HANDSHAKE', name: localNameRef.current });
+    });
     conn.on('data', (payload) => {
       if (Array.isArray(payload)) {
         remoteLinesRef.current = payload;
+      } else if (payload.type === 'HANDSHAKE') {
+        setRemoteName(payload.name);
       } else if (payload.type === 'LINES') {
         remoteLinesRef.current = payload.data;
       } else if (payload.type === 'MOVE') {
@@ -629,6 +666,12 @@ export default function AirCanvas() {
      }, 4000); 
   };
 
+  const copyInviteLink = () => {
+      const url = `${window.location.origin}${window.location.pathname}?room=${peerId}`;
+      navigator.clipboard.writeText(url);
+      showToast('✅ Invite link copied to clipboard!');
+  };
+
   const handleNativeStart = () => {
       setHasStarted(true);
       if (window.__START_AIR_CANVAS__) {
@@ -641,11 +684,21 @@ export default function AirCanvas() {
       {!hasStarted && (
          <div style={{ position: 'absolute', zIndex: 1000, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }}>
             <h1 style={{ color: '#0ff', fontSize: '3rem', marginBottom: '40px', textShadow: '0 0 20px #0ff', letterSpacing: '8px' }}>AIR CANVAS</h1>
+            
+            <input 
+               type="text"
+               placeholder="Enter your name..."
+               value={localName}
+               onChange={(e) => setLocalName(e.target.value)}
+               className={styles.nameInput}
+            />
+
             <button 
                className={styles.btn} 
-               style={{ border: '2px solid #39ff14', color: '#39ff14', fontSize: '1.5rem', padding: '20px 50px', borderRadius: '40px', boxShadow: '0 0 20px rgba(57, 255, 20, 0.3)', cursor: 'pointer', background: 'rgba(57, 255, 20, 0.1)' }} 
+               disabled={!localName.trim()}
+               style={{ border: '2px solid #39ff14', color: '#39ff14', fontSize: '1.5rem', padding: '20px 50px', borderRadius: '40px', boxShadow: '0 0 20px rgba(57, 255, 20, 0.3)', cursor: localName.trim() ? 'pointer' : 'not-allowed', background: 'rgba(57, 255, 20, 0.1)', opacity: localName.trim() ? 1 : 0.5, marginTop: '20px' }} 
                onClick={handleNativeStart}>
-                ENTER GAME
+                {joinRoomId ? 'JOIN FRIEND' : 'ENTER GAME'}
             </button>
             <p style={{ color: '#00ffcc', marginTop: '30px', fontSize: '1rem', opacity: 0.8 }}>Will request Camera & Microphone access securely.</p>
          </div>
@@ -656,16 +709,18 @@ export default function AirCanvas() {
 
       {isLoaded && (
         <>
-          <div className={styles.callOverlay}>
-            <span>My ID: {peerId || '...'}</span>
-            <span>|</span>
-            <input
-              type="text"
-              placeholder="Remote ID..."
-              value={remotePeerId}
-              onChange={e => setRemotePeerId(e.target.value)}
-            />
-            <button className={styles.callButton} onClick={connectToPeer}>Call</button>
+          <div className={styles.playerHud}>
+             <div className={styles.playerInfo}>
+                <span style={{ color: '#39ff14' }}>{localName} (You)</span>
+                <span style={{ margin: '0 10px', color: '#fff' }}>vs</span>
+                <span style={{ color: '#f0f' }}>{remoteName || 'Waiting for opponent...'}</span>
+             </div>
+             
+             {!isInCall && (
+                 <button className={styles.inviteButton} onClick={copyInviteLink}>
+                     🔗 Copy Invite Link
+                 </button>
+             )}
           </div>
 
           {/* <div className={styles.tutorialHUD}>
