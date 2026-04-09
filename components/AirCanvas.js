@@ -818,6 +818,14 @@ export default function AirCanvas() {
           <div className={styles.divider}></div>
           
           <button 
+             className={`${styles.controlBtn} ${!showGrid ? styles.off : ''}`} 
+             onClick={() => setShowGrid(!showGrid)}
+             title={showGrid ? "Disable Game Mode (Free Draw)" : "Enable Game Mode (Tic-Tac-Toe)"}
+          >
+             {showGrid ? '🎲' : '✏️'}
+          </button>
+
+          <button 
              className={styles.controlBtn} 
              style={{ border: myRole === 'X' ? '2px solid #39ff14' : '2px solid #0ff', width: '60px', borderRadius: '15px', fontSize: '1.2rem', fontWeight: 'bold' }} 
              onClick={() => setMyRole(myRole === 'X' ? 'O' : 'X')}
