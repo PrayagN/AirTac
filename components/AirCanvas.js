@@ -112,7 +112,14 @@ export default function AirCanvas() {
         }
 
         // 1. Immediately request camera so browser ties it precisely to the user's click interaction
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720, facingMode: "user" }, audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                width: { ideal: 1280 }, 
+                height: { ideal: 720 }, 
+                facingMode: "user" 
+            }, 
+            audio: true 
+        });
         
         // 2. Camera succeeded! Now fetch AI models safely
         const vision = await FilesetResolver.forVisionTasks(
@@ -121,7 +128,7 @@ export default function AirCanvas() {
         handLandmarker = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
             modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
-            delegate: "GPU"
+            delegate: "CPU"
           },
           runningMode: "VIDEO",
           numHands: 1,
