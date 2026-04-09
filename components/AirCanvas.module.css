@@ -1,7 +1,8 @@
 .container {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  height: 100vh; /* Fallback */
+  height: 100dvh; /* Mobile URL Bar fix */
   overflow: hidden;
   background-color: #000;
   display: flex;
