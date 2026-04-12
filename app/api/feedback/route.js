@@ -20,7 +20,6 @@ export async function POST(req) {
     const rawKey = process.env.GOOGLE_PRIVATE_KEY;
     const sheetId = process.env.GOOGLE_SHEET_ID;
 
-    console.log(authEmail, rawKey, sheetId);
 
     if (!authEmail || !rawKey || !sheetId) {
       console.error("[Feedback API] Missing environment variables");
