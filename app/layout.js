@@ -14,6 +14,10 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Air Canvas Game",
   description: "Real-time AI Air Drawing Multiplayer Game",
+  icons: {
+    icon: "/feedback-icon.png",
+    apple: "/feedback-icon.png",
+  },
 };
 
 export const viewport = {

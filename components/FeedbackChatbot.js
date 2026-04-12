@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import FeedbackIcon from "./FeedbackIcon";
 
 export default function FeedbackChatbot() {
   const [showBubble, setShowBubble] = useState(false);
@@ -15,7 +16,7 @@ export default function FeedbackChatbot() {
   useEffect(() => {
     bubbleTimerRef.current = setTimeout(() => {
       if (!isOpen) setShowBubble(true);
-    }, 10000);
+    }, 5000);
     return () => clearTimeout(bubbleTimerRef.current);
   }, []);
 
@@ -103,8 +104,8 @@ export default function FeedbackChatbot() {
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}
               >
-                💬 Don&apos;t forget to share your feedback!{" "}
-                <span style={{ color: "#ddb7ff" }}>Click me →</span>
+                Don&apos;t forget to share your feedback!{" "}
+                <span style={{ color: "#ddb7ff" }}>👇</span>
               </p>
             </motion.div>
           )}
@@ -119,33 +120,21 @@ export default function FeedbackChatbot() {
           whileTap={{ scale: 0.92 }}
           aria-label="Open Feedback"
           style={{
-            width: "64px",
-            height: "64px",
+            width: "72px",
+            height: "72px",
             borderRadius: "50%",
             border: "none",
-            background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 60%, #06b6d4 100%)",
-            boxShadow:
-              "0 8px 30px rgba(124,58,237,0.5), 0 0 0 4px rgba(124,58,237,0.15)",
+            background: "transparent",
+            boxShadow: "none",
             cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "28px",
+            padding: 0,
             position: "relative",
           }}
         >
-          {/* Pulse ring */}
-          <motion.span
-            animate={{ scale: [1, 1.55], opacity: [0.6, 0] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeOut" }}
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              background: "rgba(124,58,237,0.45)",
-            }}
-          />
-          🤖
+          <FeedbackIcon size={72} />
         </motion.button>
       </div>
 
@@ -241,12 +230,12 @@ export default function FeedbackChatbot() {
                     transition: "background 0.2s",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(255,255,255,0.14)")
+                  (e.currentTarget.style.background =
+                    "rgba(255,255,255,0.14)")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background =
-                      "rgba(255,255,255,0.07)")
+                  (e.currentTarget.style.background =
+                    "rgba(255,255,255,0.07)")
                   }
                 >
                   ✕
@@ -330,12 +319,12 @@ export default function FeedbackChatbot() {
                         transition: "border-color 0.2s",
                       }}
                       onFocus={(e) =>
-                        (e.currentTarget.style.borderColor =
-                          "rgba(192,193,255,0.5)")
+                      (e.currentTarget.style.borderColor =
+                        "rgba(192,193,255,0.5)")
                       }
                       onBlur={(e) =>
-                        (e.currentTarget.style.borderColor =
-                          "rgba(192,193,255,0.18)")
+                      (e.currentTarget.style.borderColor =
+                        "rgba(192,193,255,0.18)")
                       }
                     />
                   </div>
@@ -376,12 +365,12 @@ export default function FeedbackChatbot() {
                         transition: "border-color 0.2s",
                       }}
                       onFocus={(e) =>
-                        (e.currentTarget.style.borderColor =
-                          "rgba(192,193,255,0.5)")
+                      (e.currentTarget.style.borderColor =
+                        "rgba(192,193,255,0.5)")
                       }
                       onBlur={(e) =>
-                        (e.currentTarget.style.borderColor =
-                          "rgba(192,193,255,0.18)")
+                      (e.currentTarget.style.borderColor =
+                        "rgba(192,193,255,0.18)")
                       }
                     />
                   </div>

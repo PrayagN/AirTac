@@ -1,7 +1,7 @@
 import AirCanvas from '@/components/AirCanvas';
 
 export const metadata = {
-  title: 'Air Draw SOS',
+  title: 'Obsidian Gaming',
   description: 'Control the game using hand gestures in the air.',
 }
 

@@ -120,6 +120,12 @@ export default function AirCanvas() {
     return () => clearInterval(interval);
   }, [isInCall]);
 
+  const [isDoodleEnabled, setIsDoodleEnabled] = useState(false);
+  const isDoodleEnabledRef = useRef(false);
+  useEffect(() => { isDoodleEnabledRef.current = isDoodleEnabled; }, [isDoodleEnabled]);
+
+  const gridContainerRef = useRef(null);
+
   const isPinchingRef = useRef(false);
   const needsSyncRef = useRef(false);
   const isDrawingEnabledRef = useRef(true);
@@ -472,14 +478,38 @@ export default function AirCanvas() {
             if (isPinching) {
               const pX = Math.round(smoothedPx * 10) / 10;
               const pY = Math.round(smoothedPy * 10) / 10;
-              if (!isPinchingRef.current) {
-                linesRef.current.push({ color: '#df15ff', points: [{ x: pX, y: pY }] });
-                isPinchingRef.current = true;
-              } else {
-                const currentLine = linesRef.current[linesRef.current.length - 1];
-                if (currentLine) currentLine.points.push({ x: pX, y: pY });
+
+              let canDraw = isDoodleEnabledRef.current;
+              if (!canDraw && gridContainerRef.current) {
+                const rect = gridContainerRef.current.getBoundingClientRect();
+                const scaleX = window.innerWidth / canvas.width;
+                const scaleY = window.innerHeight / canvas.height;
+                const scale = Math.max(scaleX, scaleY);
+                const actW = canvas.width * scale;
+                const actH = canvas.height * scale;
+                const offsetX = (window.innerWidth - actW) / 2;
+                const offsetY = (window.innerHeight - actH) / 2;
+                const mirroredPx = canvas.width - pX;
+                const screenX = mirroredPx * scale + offsetX;
+                const screenY = pY * scale + offsetY;
+
+                // Add 15px margin for easier drawing near edges
+                if (screenX >= rect.left - 15 && screenX <= rect.right + 15 && 
+                    screenY >= rect.top - 15 && screenY <= rect.bottom + 15) {
+                  canDraw = true;
+                }
               }
-              needsSyncRef.current = true;
+
+              if (canDraw) {
+                if (!isPinchingRef.current) {
+                  linesRef.current.push({ color: '#df15ff', points: [{ x: pX, y: pY }] });
+                  isPinchingRef.current = true;
+                } else {
+                  const currentLine = linesRef.current[linesRef.current.length - 1];
+                  if (currentLine) currentLine.points.push({ x: pX, y: pY });
+                }
+                needsSyncRef.current = true;
+              }
             } else {
               // PINCH RELEASED -> SHAPE ENGINE
               if (isPinchingRef.current) {
@@ -942,7 +972,6 @@ export default function AirCanvas() {
 
   // --- Aesthetic Victory & Animation Handlers ---
   const [lineCoords, setLineCoords] = useState(null);
-  const gridContainerRef = useRef(null);
 
   useEffect(() => {
     if (!winningLine || !gridContainerRef.current) return;
@@ -1234,8 +1263,8 @@ export default function AirCanvas() {
                 onTouchStart={e => { e.preventDefault(); handleDragStart(e.touches[0].clientX, e.touches[0].clientY); }}
               >
                 <svg width="16" height="8" viewBox="0 0 16 8" fill="none" className="opacity-40 group-hover/handle:opacity-80 transition-opacity">
-                  <circle cx="2" cy="2" r="1.5" fill="white"/><circle cx="8" cy="2" r="1.5" fill="white"/><circle cx="14" cy="2" r="1.5" fill="white"/>
-                  <circle cx="2" cy="6" r="1.5" fill="white"/><circle cx="8" cy="6" r="1.5" fill="white"/><circle cx="14" cy="6" r="1.5" fill="white"/>
+                  <circle cx="2" cy="2" r="1.5" fill="white" /><circle cx="8" cy="2" r="1.5" fill="white" /><circle cx="14" cy="2" r="1.5" fill="white" />
+                  <circle cx="2" cy="6" r="1.5" fill="white" /><circle cx="8" cy="6" r="1.5" fill="white" /><circle cx="14" cy="6" r="1.5" fill="white" />
                 </svg>
                 <span className="text-[8px] uppercase tracking-[0.2em] text-white/30 group-hover/handle:text-white/60 transition-colors font-bold">drag</span>
               </div>
@@ -1243,92 +1272,92 @@ export default function AirCanvas() {
               {/* The Grid itself */}
               <div ref={gridContainerRef} className="relative grid grid-cols-3 gap-2 sm:gap-3 p-3 sm:p-4 bg-black/40 backdrop-blur-2xl rounded-[2rem] border border-white/10 grid-glow mt-10">
 
-              {/* Burning Turn Timer SVG Overlay with Sparkle Tip */}
-              {isInCall && !winner && turnDurationSetting > 0 && (
-                <svg className="absolute inset-0 pointer-events-none w-full h-full overflow-visible z-[60]">
-                  {/* Main Perimeter Border */}
-                  <rect
-                    x="-2" y="-2"
-                    width="calc(100% + 4px)" height="calc(100% + 4px)"
-                    rx="32" ry="32"
-                    fill="none"
-                    stroke={timeLeft > (turnDurationSetting * 1000 * 0.5) ? '#39ff14' : timeLeft > (turnDurationSetting * 1000 * 0.2) ? '#ffea00' : '#ff0000'}
-                    strokeWidth="6"
-                    pathLength="100"
-                    strokeDasharray="100 100"
-                    strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
-                    style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease', strokeLinecap: 'round' }}
-                  />
-                  {/* Glowing Sparkle Body */}
-                  <rect
-                    x="-2" y="-2"
-                    width="calc(100% + 4px)" height="calc(100% + 4px)"
-                    rx="32" ry="32"
-                    fill="none"
-                    stroke={timeLeft > (turnDurationSetting * 1000 * 0.5) ? '#ffffff' : timeLeft > (turnDurationSetting * 1000 * 0.2) ? '#ffea00' : '#ff0000'}
-                    strokeWidth="12"
-                    pathLength="100"
-                    strokeDasharray="0.01 99.99"
-                    strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
-                    style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease', strokeLinecap: 'round', filter: 'blur(4px)' }}
-                  />
-                  {/* Hot Intense Sparkle Core */}
-                  <rect
-                    x="-2" y="-2"
-                    width="calc(100% + 4px)" height="calc(100% + 4px)"
-                    rx="32" ry="32"
-                    fill="none"
-                    stroke="#ffffff"
-                    strokeWidth="6"
-                    pathLength="100"
-                    strokeDasharray="0.01 99.99"
-                    strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
-                    style={{ transition: 'stroke-dashoffset 1s linear', strokeLinecap: 'round', filter: 'drop-shadow(0px 0px 8px #ffffff)' }}
-                  />
-                </svg>
-              )}
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => {
-                const cellValue = boardRef.current[index];
-                return (
-                  <div id={`tic-cell-${index}`} key={index} className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
-                    {cellValue === 'X' && (
-                      <motion.span
-                        initial={{ scale: 0, rotate: -45, opacity: 0 }}
-                        animate={{ scale: 1, rotate: 0, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                        className="material-symbols-outlined text-4xl sm:text-5xl text-primary glow-text-primary" style={{ fontVariationSettings: "'wght' 200" }}>close</motion.span>
-                    )}
-                    {cellValue === 'O' && (
-                      <motion.span
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                        className="material-symbols-outlined text-4xl sm:text-5xl text-tertiary glow-text-tertiary" style={{ fontVariationSettings: "'wght' 200" }}>radio_button_unchecked</motion.span>
-                    )}
-                  </div>
-                );
-              })}
+                {/* Burning Turn Timer SVG Overlay with Sparkle Tip */}
+                {isInCall && !winner && turnDurationSetting > 0 && (
+                  <svg className="absolute inset-0 pointer-events-none w-full h-full overflow-visible z-[60]">
+                    {/* Main Perimeter Border */}
+                    <rect
+                      x="-2" y="-2"
+                      width="calc(100% + 4px)" height="calc(100% + 4px)"
+                      rx="32" ry="32"
+                      fill="none"
+                      stroke={timeLeft > (turnDurationSetting * 1000 * 0.5) ? '#39ff14' : timeLeft > (turnDurationSetting * 1000 * 0.2) ? '#ffea00' : '#ff0000'}
+                      strokeWidth="6"
+                      pathLength="100"
+                      strokeDasharray="100 100"
+                      strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
+                      style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease', strokeLinecap: 'round' }}
+                    />
+                    {/* Glowing Sparkle Body */}
+                    <rect
+                      x="-2" y="-2"
+                      width="calc(100% + 4px)" height="calc(100% + 4px)"
+                      rx="32" ry="32"
+                      fill="none"
+                      stroke={timeLeft > (turnDurationSetting * 1000 * 0.5) ? '#ffffff' : timeLeft > (turnDurationSetting * 1000 * 0.2) ? '#ffea00' : '#ff0000'}
+                      strokeWidth="12"
+                      pathLength="100"
+                      strokeDasharray="0.01 99.99"
+                      strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
+                      style={{ transition: 'stroke-dashoffset 1s linear, stroke 0.5s ease', strokeLinecap: 'round', filter: 'blur(4px)' }}
+                    />
+                    {/* Hot Intense Sparkle Core */}
+                    <rect
+                      x="-2" y="-2"
+                      width="calc(100% + 4px)" height="calc(100% + 4px)"
+                      rx="32" ry="32"
+                      fill="none"
+                      stroke="#ffffff"
+                      strokeWidth="6"
+                      pathLength="100"
+                      strokeDasharray="0.01 99.99"
+                      strokeDashoffset={100 - (timeLeft / (turnDurationSetting * 1000)) * 100}
+                      style={{ transition: 'stroke-dashoffset 1s linear', strokeLinecap: 'round', filter: 'drop-shadow(0px 0px 8px #ffffff)' }}
+                    />
+                  </svg>
+                )}
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => {
+                  const cellValue = boardRef.current[index];
+                  return (
+                    <div id={`tic-cell-${index}`} key={index} className="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+                      {cellValue === 'X' && (
+                        <motion.span
+                          initial={{ scale: 0, rotate: -45, opacity: 0 }}
+                          animate={{ scale: 2, rotate: 0, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                          className="material-symbols-outlined text-7xl sm:text-7xl text-primary glow-text-primary" style={{ fontVariationSettings: "'wght' 400" }}>close</motion.span>
+                      )}
+                      {cellValue === 'O' && (
+                        <motion.span
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 2, opacity: 1 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                          className="material-symbols-outlined text-7xl sm:text-7xl text-tertiary glow-text-tertiary" style={{ fontVariationSettings: "'wght' 400" }}>radio_button_unchecked</motion.span>
+                      )}
+                    </div>
+                  );
+                })}
 
-              {winningLine && lineCoords && (
-                <svg className="absolute inset-0 pointer-events-none z-50 overflow-visible" style={{ width: '100%', height: '100%' }}>
-                  <motion.line
-                    x1={lineCoords.x1}
-                    y1={lineCoords.y1}
-                    x2={lineCoords.x2}
-                    y2={lineCoords.y2}
-                    stroke={winner === 'X' ? '#39ff14' : '#0ff'}
-                    strokeWidth="16"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0, scale: 0.95 }}
-                    animate={{ pathLength: 1, opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    style={{
-                      filter: `drop-shadow(0 0 16px ${winner === 'X' ? '#39ff14' : '#0ff'}) drop-shadow(0 0 32px ${winner === 'X' ? '#39ff14' : '#0ff'})`
-                    }}
-                  />
-                </svg>
-              )}
-            </div> {/* end gridContainerRef */}
+                {winningLine && lineCoords && (
+                  <svg className="absolute inset-0 pointer-events-none z-50 overflow-visible" style={{ width: '100%', height: '100%' }}>
+                    <motion.line
+                      x1={lineCoords.x1}
+                      y1={lineCoords.y1}
+                      x2={lineCoords.x2}
+                      y2={lineCoords.y2}
+                      stroke={winner === 'X' ? '#39ff14' : '#0ff'}
+                      strokeWidth="16"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0, opacity: 0, scale: 0.95 }}
+                      animate={{ pathLength: 1, opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      style={{
+                        filter: `drop-shadow(0 0 16px ${winner === 'X' ? '#39ff14' : '#0ff'}) drop-shadow(0 0 32px ${winner === 'X' ? '#39ff14' : '#0ff'})`
+                      }}
+                    />
+                  </svg>
+                )}
+              </div> {/* end gridContainerRef */}
             </div> {/* end group wrapper */}
 
             {/* Session Metadata */}
@@ -1437,6 +1466,14 @@ export default function AirCanvas() {
             className={`flex flex-col items-center gap-1 ${isDrawingEnabled ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isDrawingEnabled ? 'pan_tool' : 'do_not_touch'}</span>
             <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Hands</span>
+          </button>
+
+          {/* Doodle Outside Grid Toggle */}
+          <button
+            onClick={() => setIsDoodleEnabled(!isDoodleEnabled)}
+            className={`flex flex-col items-center gap-1 ${isDoodleEnabled ? 'bg-indigo-500/20 text-indigo-100 rounded-full' : 'text-slate-400'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isDoodleEnabled ? 'gesture' : 'draw_abstract'}</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Doodle</span>
           </button>
 
           {/* Erase Board & Switch Role logic adapted into standard layout */}
