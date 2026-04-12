@@ -5,6 +5,7 @@ import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import Peer from 'peerjs';
 import { QRCodeSVG } from 'qrcode.react';
 import styles from './AirCanvas.module.css';
+import LandingPage from './LandingPage';
 import {
   Mic, MicOff,
   Video, VideoOff,
@@ -827,70 +828,15 @@ export default function AirCanvas() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={hasStarted ? styles.container : ""}>
       {!hasStarted && (
-        <div className={styles.landingWrapper}>
-          <div className={styles.orb1}></div>
-          <div className={styles.orb2}></div>
-          <div className={styles.orb3}></div>
-
-          {Array.from({ length: 15 }).map((_, i) => (
-            <div
-              key={i}
-              className={styles.floatingShape}
-              style={{
-                left: `${Math.random() * 100}%`,
-                fontSize: `${Math.random() * 4 + 2}rem`,
-                animationDuration: `${Math.random() * 20 + 20}s`,
-                animationDelay: `${Math.random() * -30}s`
-              }}
-            >
-              {Math.random() > 0.5 ? 'X' : 'O'}
-            </div>
-          ))}
-
-          <div className={styles.landingGlassCard}>
-            <h1 className={styles.landingTitle}>AIR DRAW SOS</h1>
-            <p className={styles.landingSubtitle}>Draw X's and O's in mid-air using your webcam. A magical AI multiplayer experience.</p>
-
-            <input
-              type="text"
-              placeholder="Enter your nickname"
-              value={localName}
-              onChange={(e) => setLocalName(e.target.value)}
-              className={styles.landingInput}
-              spellCheck="false"
-              maxLength={15}
-            />
-
-            {!joinRoomId && (
-              <div className={styles.joinCodeSection}>
-                <div className={styles.orDivider}><span>OR</span></div>
-                <input
-                  type="text"
-                  placeholder="ENTER ROOM CODE"
-                  value={inputRoomCode}
-                  onChange={(e) => setInputRoomCode(e.target.value.toUpperCase())}
-                  className={styles.landingInputCode}
-                  spellCheck="false"
-                  maxLength={5}
-                />
-              </div>
-            )}
-
-            <button
-              className={styles.landingBtn}
-              disabled={!localName.trim()}
-              onClick={handleNativeStart}>
-              {joinRoomId || inputRoomCode.trim() ? 'JOIN MATCH' : 'CREATE MATCH'}
-            </button>
-
-            <div className={styles.landingDisclaimer}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.112l3.18 7.93Z" /></svg>
-              Requires Camera Access
-            </div>
-          </div>
-        </div>
+        <LandingPage
+          localName={localName}
+          setLocalName={setLocalName}
+          inputRoomCode={inputRoomCode}
+          setInputRoomCode={setInputRoomCode}
+          handleNativeStart={handleNativeStart}
+        />
       )}
 
 
@@ -993,8 +939,8 @@ export default function AirCanvas() {
 
       {/* Media & Canvas */}
       <video ref={remoteVideoRef} className={isInCall ? styles.remoteVideo : styles.hidden} autoPlay playsInline></video>
-      <video ref={videoRef} className={isInCall ? styles.videoPip : styles.video} autoPlay playsInline></video>
-      <canvas ref={canvasRef} className={styles.canvas}></canvas>
+      <video ref={videoRef} className={!hasStarted ? styles.hidden : (isInCall ? styles.videoPip : styles.video)} autoPlay playsInline></video>
+      <canvas ref={canvasRef} className={!hasStarted ? styles.hidden : styles.canvas}></canvas>
 
       {/* Removed old bulky tools, integrated below */}
 
