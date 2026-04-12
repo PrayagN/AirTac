@@ -29,6 +29,7 @@ export default function LandingPage({
   const [showInputModal, setShowInputModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'join'
   const autoOpenedRef = useRef(false);
+  const [showMobileToast, setShowMobileToast] = useState(false);
   const [avatarOptions, setAvatarOptions] = useState(['Felix', 'Aneka', 'Jasper', 'Oliver', 'Sophia', 'Zoe']);
 
   const randomizeAvatars = () => {
@@ -44,6 +45,15 @@ export default function LandingPage({
       autoOpenedRef.current = true;
     }
   }, [inputRoomCode]);
+
+  // Detect mobile / tablet and show a "use Desktop Mode" toast
+  useEffect(() => {
+    const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    const isNarrow = window.innerWidth < 1024;
+    if (isTouchDevice || isNarrow) {
+      setShowMobileToast(true);
+    }
+  }, []);
 
   const openJoinModal = () => {
     setModalMode('join');
@@ -66,6 +76,71 @@ export default function LandingPage({
 
   return (
     <div className="bg-surface text-on-surface font-body selection:bg-primary/30 min-h-screen dark">
+
+      {/* ── Mobile / Tablet Warning Toast ── */}
+      <AnimatePresence>
+        {showMobileToast && (
+          <motion.div
+            initial={{ y: -80, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -80, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 24 }}
+            style={{
+              position: 'fixed',
+              top: '72px',
+              left: 0,
+              right: 0,
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              zIndex: 9999,
+              width: 'calc(100% - 32px)',
+              maxWidth: '560px',
+              background: 'rgba(15, 10, 40, 0.82)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(139,92,246,0.35)',
+              borderRadius: '1.25rem',
+              padding: '14px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: '0 8px 40px rgba(124,58,237,0.35)',
+            }}
+          >
+
+
+            {/* Text */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontWeight: 700, fontSize: '13px', color: '#e2d9ff', letterSpacing: '0.01em' }}>
+                Best enjoyed on Desktop
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(192,193,255,0.65)', lineHeight: 1.4 }}>
+                For the full Air Canvas experience, please enable <strong style={{ color: '#c4b5fd' }}>Desktop Mode</strong> in your browser settings.
+              </p>
+            </div>
+
+            {/* Dismiss */}
+            <button
+              onClick={() => setShowMobileToast(false)}
+              aria-label="Dismiss"
+              style={{
+                flexShrink: 0,
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                cursor: 'pointer',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-xl dark:bg-[#0b1326]/60 shadow-[0_8px_32px_0_rgba(11,19,38,0.08)]">
         <div className="flex justify-between items-center w-full px-8 py-6 max-w-7xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
@@ -128,17 +203,60 @@ export default function LandingPage({
             </ScrollReveal>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <ScrollReveal delay={150} className="md:col-span-2 h-full">
-                <motion.div whileHover={{ scale: 1.02 }} className="h-full group relative overflow-hidden rounded-[2rem] bg-surface-container p-12 transition-colors duration-500 hover:bg-surface-container-high border border-outline-variant/10">
-                  <div className="flex flex-col md:flex-row gap-12 items-center">
-                    <div className="flex-1">
-                      <span className="material-symbols-outlined text-4xl text-primary mb-6">videocam</span>
+                <motion.div whileHover={{ scale: 1.02 }} className="h-full group relative overflow-hidden rounded-[2rem] bg-surface-container p-10 transition-colors duration-500 hover:bg-surface-container-high border border-outline-variant/10">
+                  <div className="flex flex-col md:flex-row gap-10 items-center h-full">
+                    {/* Left: Text */}
+                    <div className="flex-1 flex flex-col justify-center">
+                      <span className="material-symbols-outlined text-3xl text-primary mb-5" style={{ fontVariationSettings: "'FILL' 0,'wght' 300" }}>videocam</span>
                       <h3 className="text-3xl font-bold mb-4">Social XOX</h3>
-                      <p className="text-secondary text-lg leading-relaxed">
-                        Classic Tic-Tac-Toe, elevated for the modern age. Play directly over video calls with friends, seeing their reactions in real-time as you make your winning move.
+                      <p className="text-secondary leading-relaxed">
+                        Classic Tic-Tac-Toe, elevated for the modern age. Play with friends while keeping the conversation flowing. Our interface places gameplay front and center without ever obscuring your connections.
                       </p>
                     </div>
-                    <div className="flex-1 relative w-full aspect-video rounded-xl overflow-hidden shadow-2xl">
-                      <img className="w-full h-full object-cover" alt="stylized screenshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtze_WFJSqMlUUei_tQaj4lJJiKqF6RVksdalAeX5T6F1QG8d2yIzBe9PzHSWRX7GYPNHzly5lQXNMjQOjARH2siNDoKGEnJlcKPa1omlfX3JAGcGrCC7pwNxdbUniZUD1jCjSSCPdFPClh3pVE7-LQK1yR6kAo8zG7lCMJMIIdLYQ3DZXZyF4a316i2yAH4f5Qm-IsVeBZ3nxT2iBurvCQ_i8Yo_JxCKGDLCrvgtE1XuK25bDoDymhNRGh-G7H_f0S7P6hFcx4oWi" />
+                    {/* Right: Live XOX Preview */}
+                    <div className="flex-1 w-full flex flex-col items-center gap-4">
+                      {/* Players vs Row */}
+                      <div className="flex items-center justify-center gap-3 w-full">
+                        {/* Player 1 */}
+                        <div className="relative">
+                          <div className="w-[88px] h-[72px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                            <img
+                              src="https://randomuser.me/api/portraits/men/32.jpg"
+                              alt="Player 1"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-primary/30 flex items-center justify-center text-primary font-black text-xs shadow-md">X</div>
+                        </div>
+                        {/* VS */}
+                        <div className="px-2.5 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface-variant text-xs font-bold tracking-widest">vs</div>
+                        {/* Player 2 */}
+                        <div className="relative">
+                          <div className="w-[88px] h-[72px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                            <img
+                              src="https://randomuser.me/api/portraits/women/44.jpg"
+                              alt="Player 2"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-tertiary/30 flex items-center justify-center text-tertiary font-black text-xs shadow-md">O</div>
+                        </div>
+                      </div>
+                      {/* 3x3 Game Grid */}
+                      <div className="grid grid-cols-3 gap-2 w-full max-w-[220px]">
+                        {/* Row 1 */}
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-primary font-black text-2xl">X</div>
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                        {/* Row 2 */}
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary font-black text-2xl">O</div>
+                        <div className="aspect-square rounded-xl bg-[#2a2c34] border border-primary/20 shadow-[0_0_12px_rgba(143,245,255,0.15)] flex items-center justify-center text-primary font-black text-2xl">X</div>
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                        {/* Row 3 */}
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary font-black text-2xl">O</div>
+                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -295,17 +413,16 @@ export default function LandingPage({
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {avatarOptions.map((avatarName) => (
-                      <div 
+                      <div
                         key={avatarName}
                         onClick={() => setLocalAvatar(avatarName)}
-                        className={`cursor-pointer rounded-2xl border-2 p-2 flex items-center justify-center transition-all ${
-                          localAvatar === avatarName 
-                            ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105' 
+                        className={`cursor-pointer rounded-2xl border-2 p-2 flex items-center justify-center transition-all ${localAvatar === avatarName
+                            ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105'
                             : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
-                        }`}
+                          }`}
                       >
-                        <img 
-                          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`} 
+                        <img
+                          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`}
                           alt="Avatar Option"
                           className="w-16 h-16 drop-shadow-md"
                         />
@@ -332,9 +449,9 @@ export default function LandingPage({
 
               <div className="flex gap-4">
                 <button onClick={() => setShowInputModal(false)} className="flex-1 py-3 rounded-full border border-outline-variant/30 text-secondary hover:bg-surface-container transition-all">Cancel</button>
-                <button 
-                  onClick={submitModal} 
-                  disabled={!localName.trim() || (modalMode === 'join' && inputRoomCode.trim().length !== 5)} 
+                <button
+                  onClick={submitModal}
+                  disabled={!localName.trim() || (modalMode === 'join' && inputRoomCode.trim().length !== 5)}
                   className="flex-1 py-3 rounded-full bg-primary text-on-primary font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {modalMode === 'join' ? 'Join Now' : 'Start Session'}
