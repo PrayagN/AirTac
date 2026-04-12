@@ -3,7 +3,17 @@
 import { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import Peer from 'peerjs';
+import { QRCodeSVG } from 'qrcode.react';
 import styles from './AirCanvas.module.css';
+import {
+  Mic, MicOff,
+  Video, VideoOff,
+  Hand,
+  Grid3X3, Brush,
+  Trash2, PhoneOff,
+  ThumbsUp, Flame, Smile, Heart,
+  Link, Share2
+} from 'lucide-react';
 
 export default function AirCanvas() {
   const videoRef = useRef(null);
@@ -20,8 +30,9 @@ export default function AirCanvas() {
   const [myRole, setMyRole] = useState('X');
   const [currentTurn, setCurrentTurn] = useState('X');
   const [winner, setWinner] = useState(null);
-  const [eraseRequest, setEraseRequest] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [ping, setPing] = useState(null);
+  const [isDrawingEnabled, setIsDrawingEnabled] = useState(true);
 
   const peerRef = useRef(null);
   const dataConnRef = useRef(null);
@@ -40,27 +51,41 @@ export default function AirCanvas() {
   const [localName, setLocalName] = useState('');
   const [remoteName, setRemoteName] = useState('');
   const [joinRoomId, setJoinRoomId] = useState(null);
+  const [inputRoomCode, setInputRoomCode] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const localNameRef = useRef('');
   useEffect(() => { localNameRef.current = localName; }, [localName]);
-  
+
   const joinRoomIdRef = useRef(null);
 
   useEffect(() => {
-     if (typeof window !== 'undefined') {
-         const urlParams = new URLSearchParams(window.location.search);
-         const room = urlParams.get('room');
-         if (room) {
-             setJoinRoomId(room);
-             joinRoomIdRef.current = room;
-             setRemotePeerId(room);
-         }
-     }
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const room = urlParams.get('room');
+      if (room) {
+        setJoinRoomId(room);
+        joinRoomIdRef.current = room;
+        setRemotePeerId(room);
+      }
+    }
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (isInCall) {
+      interval = setInterval(() => {
+        if (dataConnRef.current && dataConnRef.current.open) {
+          dataConnRef.current.send({ type: 'PING', timestamp: Date.now() });
+        }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [isInCall]);
 
   const isPinchingRef = useRef(false);
   const needsSyncRef = useRef(false);
-  const erasePendingRef = useRef(false);
+  const isDrawingEnabledRef = useRef(true);
 
   // Ref mirrors for animation loop closure
   const showGridRef = useRef(showGrid);
@@ -70,6 +95,7 @@ export default function AirCanvas() {
   const turnRef = useRef(currentTurn);
   useEffect(() => { turnRef.current = currentTurn; }, [currentTurn]);
   const winnerRef = useRef(winner);
+  useEffect(() => { isDrawingEnabledRef.current = isDrawingEnabled; }, [isDrawingEnabled]);
 
   const checkWinnerLocal = (board) => {
     const lines = [
@@ -100,6 +126,12 @@ export default function AirCanvas() {
     setTimeout(() => { setToastMessage(''); }, 3500);
   };
 
+  const getPingColor = (p) => {
+    if (p < 80) return '#39ff14';
+    if (p < 150) return '#ffff00';
+    return '#ff4444';
+  };
+
   useEffect(() => {
     let handLandmarker;
     let animationFrameId;
@@ -111,34 +143,34 @@ export default function AirCanvas() {
       try {
         // 0. Explicit check for HTTP insecure context wipeout
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-           throw new Error("SECURE_CONTEXT_ERROR");
+          throw new Error("SECURE_CONTEXT_ERROR");
         }
 
         // 1. Immediately request camera so browser ties it precisely to the user's click interaction
         let stream;
         try {
-            // Attempt 1: Full ideal resolution and audio
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
-                audio: true 
-            });
+          // Attempt 1: Full ideal resolution and audio
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+            audio: true
+          });
         } catch (e1) {
-            console.warn("Attempt 1 (A+V) failed, trying Video only...", e1);
-            try {
-                // Attempt 2: Strict Audio blocks (iOS Microphone limits) cause NotAllowedError. Try Video only!
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }, 
-                    audio: false 
-                });
-                setIsAudioOn(false); // Notify state that audio is permanently disabled
-            } catch (e2) {
-                console.warn("Attempt 2 (Ideal Video) failed, trying Barebones Video...", e2);
-                // Attempt 3: Strict constraints might still trigger OverconstrainedError. Try barebones!
-                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-                setIsAudioOn(false);
-            }
+          console.warn("Attempt 1 (A+V) failed, trying Video only...", e1);
+          try {
+            // Attempt 2: Strict Audio blocks (iOS Microphone limits) cause NotAllowedError. Try Video only!
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+              audio: false
+            });
+            setIsAudioOn(false); // Notify state that audio is permanently disabled
+          } catch (e2) {
+            console.warn("Attempt 2 (Ideal Video) failed, trying Barebones Video...", e2);
+            // Attempt 3: Strict constraints might still trigger OverconstrainedError. Try barebones!
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            setIsAudioOn(false);
+          }
         }
-        
+
         // 2. Camera succeeded! Now fetch AI models safely
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
@@ -154,7 +186,7 @@ export default function AirCanvas() {
           minHandPresenceConfidence: 0.7,
           minTrackingConfidence: 0.7
         });
-        
+
         // 3. Complete media flow binding
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -166,25 +198,26 @@ export default function AirCanvas() {
       } catch (err) {
         console.error("Init Error:", err);
         if (err.message === "SECURE_CONTEXT_ERROR") {
-            setLoadError("BROWSER BLOCKED CAMERA: You are using an insecure HTTP Wi-Fi connection. The browser prevents Camera access! Please enable 'Insecure origins' in chrome://flags as discussed, or use an HTTPS Tunnel.");
+          setLoadError("BROWSER BLOCKED CAMERA: You are using an insecure HTTP Wi-Fi connection. The browser prevents Camera access! Please enable 'Insecure origins' in chrome://flags as discussed, or use an HTTPS Tunnel.");
         } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            setLoadError("PERMISSION DENIED: Browser blocked access. Please manually grant tracking permissions securely via the Address Bar!");
+          setLoadError("PERMISSION DENIED: Browser blocked access. Please manually grant tracking permissions securely via the Address Bar!");
         } else {
-            setLoadError("SYSTEM ERROR: Failed to load AI arrays or assign web elements. " + err.message);
+          setLoadError("SYSTEM ERROR: Failed to load AI arrays or assign web elements. " + err.message);
         }
       }
     };
 
     const initializePeer = (localStream) => {
-      const peer = new Peer();
+      const myCustomId = Math.random().toString(36).substring(2, 7).toUpperCase();
+      const peer = new Peer(myCustomId);
       peerRef.current = peer;
       peer.on('open', (id) => {
-          setPeerId(id);
-          if (joinRoomIdRef.current) {
-              setTimeout(() => {
-                  connectToPeerId(joinRoomIdRef.current, localStream);
-              }, 500);
-          }
+        setPeerId(id);
+        if (joinRoomIdRef.current) {
+          setTimeout(() => {
+            connectToPeerId(joinRoomIdRef.current, localStream);
+          }, 500);
+        }
       });
       peer.on('call', (call) => {
         call.answer(localStream);
@@ -194,6 +227,7 @@ export default function AirCanvas() {
     };
 
     let lastVideoTime = -1;
+    let lastSyncTime = 0;
     const predictWebcam = () => {
       if (!videoRef.current || !canvasRef.current || !handLandmarker) return;
 
@@ -233,19 +267,82 @@ export default function AirCanvas() {
 
         // Draw the Board Logic directly on Canvas!
         if (showGridRef.current) {
-          ctx.strokeStyle = 'rgba(0, 255, 204, 0.3)';
-          ctx.lineWidth = 10;
-          ctx.shadowBlur = 10;
-          ctx.shadowColor = '#0ff';
-
+          ctx.save();
+          
           ctx.beginPath();
-          ctx.moveTo(gridX + cellW, gridY); ctx.lineTo(gridX + cellW, gridY + GRID_SIZE);
-          ctx.moveTo(gridX + cellW * 2, gridY); ctx.lineTo(gridX + cellW * 2, gridY + GRID_SIZE);
+          if (ctx.roundRect) ctx.roundRect(gridX, gridY, GRID_SIZE, GRID_SIZE, 20);
+          else ctx.rect(gridX, gridY, GRID_SIZE, GRID_SIZE);
+          ctx.clip(); // Clip drawing to the board area
+
+          // 1. Frosted Glass Blur Effect overlaid perfectly with the video feed
+          ctx.filter = 'blur(5px)';
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.filter = 'none';
+
+          // 2. Glass Tint Overlay
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+          ctx.fill();
+
+          // 3. Faint Internal Grid Lines with Gradients
+          const hGrad = ctx.createLinearGradient(gridX, 0, gridX + GRID_SIZE, 0);
+          hGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+          hGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
+          hGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          
+          ctx.strokeStyle = hGrad;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
           ctx.moveTo(gridX, gridY + cellW); ctx.lineTo(gridX + GRID_SIZE, gridY + cellW);
           ctx.moveTo(gridX, gridY + cellW * 2); ctx.lineTo(gridX + GRID_SIZE, gridY + cellW * 2);
           ctx.stroke();
 
+          const vGrad = ctx.createLinearGradient(0, gridY, 0, gridY + GRID_SIZE);
+          vGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+          vGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+          vGrad.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
+
+          ctx.strokeStyle = vGrad;
+          ctx.beginPath();
+          ctx.moveTo(gridX + cellW, gridY); ctx.lineTo(gridX + cellW, gridY + GRID_SIZE);
+          ctx.moveTo(gridX + cellW * 2, gridY); ctx.lineTo(gridX + cellW * 2, gridY + GRID_SIZE);
+          ctx.stroke();
+
+          ctx.restore(); // End clipping
+
+          // 4. Elegant Outer Border & Box Shadows
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(gridX, gridY, GRID_SIZE, GRID_SIZE, 20);
+          else ctx.rect(gridX, gridY, GRID_SIZE, GRID_SIZE);
+          
+          // Outer Drop Shadow
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+          ctx.shadowBlur = 32;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 8;
+          
+          // Primary Border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          
+          // Reset shadow
           ctx.shadowBlur = 0;
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+
+          // Inset highlights (inner stroke)
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(gridX + 1, gridY + 1, GRID_SIZE - 2, GRID_SIZE - 2, 19);
+          else ctx.rect(gridX + 1, gridY + 1, GRID_SIZE - 2, GRID_SIZE - 2);
+          
+          const insetGrad = ctx.createLinearGradient(0, gridY, 0, gridY + GRID_SIZE);
+          insetGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)'); // top highlight
+          insetGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');   // fade in middle
+          insetGrad.addColorStop(1, 'rgba(255, 255, 255, 0.1)'); // bottom highlight
+          
+          ctx.strokeStyle = insetGrad;
+          ctx.lineWidth = 1;
+          ctx.stroke();
 
           // Draw locked Game Pieces
           for (let i = 0; i < 9; i++) {
@@ -277,7 +374,7 @@ export default function AirCanvas() {
         drawLines(ctx, linesRef.current, false);
         drawLines(ctx, remoteLinesRef.current, true);
 
-        if (results.landmarks && results.landmarks.length > 0) {
+        if (results.landmarks && results.landmarks.length > 0 && isDrawingEnabledRef.current) {
           const landmarks = results.landmarks[0];
           const wrist = landmarks[0];
           const thumbTip = landmarks[4];
@@ -355,25 +452,6 @@ export default function AirCanvas() {
               needsSyncRef.current = true;
             }
 
-            // Remote hit check
-            let remoteHit = false;
-            for (let i = 0; i < remoteLinesRef.current.length; i++) {
-              const line = remoteLinesRef.current[i];
-              for (let j = 0; j < line.points.length; j++) {
-                if (Math.hypot(line.points[j].x - ex, line.points[j].y - ey) < eraserRadius) {
-                  remoteHit = true; break;
-                }
-              }
-              if (remoteHit) break;
-            }
-
-            if (remoteHit && !erasePendingRef.current) {
-              if (dataConnRef.current && dataConnRef.current.open) {
-                dataConnRef.current.send({ type: 'ERASE_REQUEST' });
-                erasePendingRef.current = true;
-                setTimeout(() => { erasePendingRef.current = false; }, 4000);
-              }
-            }
 
             isPinchingRef.current = false;
 
@@ -404,12 +482,14 @@ export default function AirCanvas() {
 
             // SHAPE TRACKING
             if (isPinching) {
+              const pX = Math.round(smoothedPx * 10) / 10;
+              const pY = Math.round(smoothedPy * 10) / 10;
               if (!isPinchingRef.current) {
-                linesRef.current.push({ color: '#39ff14', points: [{ x: smoothedPx, y: smoothedPy }] });
+                linesRef.current.push({ color: '#39ff14', points: [{ x: pX, y: pY }] });
                 isPinchingRef.current = true;
               } else {
                 const currentLine = linesRef.current[linesRef.current.length - 1];
-                if (currentLine) currentLine.points.push({ x: smoothedPx, y: smoothedPy });
+                if (currentLine) currentLine.points.push({ x: pX, y: pY });
               }
               needsSyncRef.current = true;
             } else {
@@ -452,7 +532,7 @@ export default function AirCanvas() {
                         const cx = minX + width / 2; const cy = minY + height / 2;
                         const r = Math.max(width, height) / 2;
                         for (let angle = 0; angle <= Math.PI * 2; angle += 0.15) {
-                          strokeO.push({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r });
+                          strokeO.push({ x: Math.round((cx + Math.cos(angle) * r) * 10) / 10, y: Math.round((cy + Math.sin(angle) * r) * 10) / 10 });
                         }
                       }
                     } else {
@@ -484,8 +564,8 @@ export default function AirCanvas() {
                                 minY = Math.min(minY, pMinY); maxY = Math.max(maxY, pMaxY);
                                 detectedShape = 'X';
                                 stroke1 = []; stroke2 = [];
-                                for (let t = 0; t <= 1; t += 0.05) stroke1.push({ x: minX + (maxX - minX) * t, y: minY + (maxY - minY) * t });
-                                for (let t = 0; t <= 1; t += 0.05) stroke2.push({ x: maxX - (maxX - minX) * t, y: minY + (maxY - minY) * t });
+                                for (let t = 0; t <= 1; t += 0.05) stroke1.push({ x: Math.round((minX + (maxX - minX) * t) * 10) / 10, y: Math.round((minY + (maxY - minY) * t) * 10) / 10 });
+                                for (let t = 0; t <= 1; t += 0.05) stroke2.push({ x: Math.round((maxX - (maxX - minX) * t) * 10) / 10, y: Math.round((minY + (maxY - minY) * t) * 10) / 10 });
                                 break;
                               }
                             }
@@ -514,11 +594,11 @@ export default function AirCanvas() {
 
                     if (isBoardMove && detectedShape) {
                       cleanArea(minX, maxX, minY, maxY);
-                      
+
                       const isInCallCheck = dataConnRef.current && dataConnRef.current.open;
-                      
+
                       if (isInCallCheck && roleRef.current !== turnRef.current) {
-                          showToast(`⚠ NOT YOUR TURN! Waiting for Player ${turnRef.current}...`);
+                        showToast(`⚠ NOT YOUR TURN! Waiting for Player ${turnRef.current}...`);
                       } else if (detectedShape !== roleRef.current) {
                         showToast(`⚠ RULE ERROR: You are Player ${roleRef.current}, but you drew a ${detectedShape}!`);
                       } else if (boardRef.current[cellIdx] !== null) {
@@ -555,8 +635,12 @@ export default function AirCanvas() {
       }
 
       if (needsSyncRef.current && dataConnRef.current && dataConnRef.current.open) {
-        dataConnRef.current.send({ type: 'LINES', data: linesRef.current });
-        needsSyncRef.current = false;
+        const nowMs = Date.now();
+        if (nowMs - lastSyncTime > 60) {
+          dataConnRef.current.send({ type: 'LINES', data: linesRef.current });
+          lastSyncTime = nowMs;
+          needsSyncRef.current = false;
+        }
       }
 
       animationFrameId = requestAnimationFrame(predictWebcam);
@@ -590,7 +674,7 @@ export default function AirCanvas() {
   const connectToPeerId = (targetId, stream) => {
     if (!targetId || !peerRef.current || !stream) return;
     const call = peerRef.current.call(targetId, stream);
-    
+
     call.on('stream', (remoteStream) => {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
     });
@@ -601,7 +685,7 @@ export default function AirCanvas() {
   };
 
   const connectToPeer = () => {
-     connectToPeerId(remotePeerId, videoRef.current?.srcObject);
+    connectToPeerId(remotePeerId, videoRef.current?.srcObject);
   };
 
   const setupCallResponses = (call) => {
@@ -612,9 +696,9 @@ export default function AirCanvas() {
   };
 
   const setupDataConnection = (conn) => {
-    conn.on('open', () => { 
-        dataConnRef.current = conn; 
-        conn.send({ type: 'HANDSHAKE', name: localNameRef.current });
+    conn.on('open', () => {
+      dataConnRef.current = conn;
+      conn.send({ type: 'HANDSHAKE', name: localNameRef.current });
     });
     conn.on('data', (payload) => {
       if (Array.isArray(payload)) {
@@ -635,10 +719,12 @@ export default function AirCanvas() {
       } else if (payload.type === 'ROLE_SYNC') {
         setMyRole(payload.role);
         showToast(`Roles updated! You are now Player ${payload.role}`);
-      } else if (payload.type === 'ERASE_REQUEST') {
-        setEraseRequest(true);
       } else if (payload.type === 'EMOJI') {
         spawnEmoji(payload.emoji, true);
+      } else if (payload.type === 'PING') {
+        conn.send({ type: 'PONG', timestamp: payload.timestamp });
+      } else if (payload.type === 'PONG') {
+        setPing(Date.now() - payload.timestamp);
       }
     });
   };
@@ -648,11 +734,6 @@ export default function AirCanvas() {
     needsSyncRef.current = true;
   };
 
-  const handleApproveErase = () => {
-    linesRef.current = [];
-    needsSyncRef.current = true;
-    setEraseRequest(false);
-  };
 
   const resetBoard = () => {
     boardRef.current = Array(9).fill(null);
@@ -665,13 +746,13 @@ export default function AirCanvas() {
   };
 
   const handleRoleSwitch = () => {
-      const newRole = myRole === 'X' ? 'O' : 'X';
-      setMyRole(newRole);
-      if (dataConnRef.current && dataConnRef.current.open) {
-          const oppositeRole = newRole === 'X' ? 'O' : 'X';
-          dataConnRef.current.send({ type: 'ROLE_SYNC', role: oppositeRole });
-          showToast(`Synced! Opponent forced to Player ${oppositeRole}`);
-      }
+    const newRole = myRole === 'X' ? 'O' : 'X';
+    setMyRole(newRole);
+    if (dataConnRef.current && dataConnRef.current.open) {
+      const oppositeRole = newRole === 'X' ? 'O' : 'X';
+      dataConnRef.current.send({ type: 'ROLE_SYNC', role: oppositeRole });
+      showToast(`Synced! Opponent forced to Player ${oppositeRole}`);
+    }
   };
 
   const toggleVideo = () => {
@@ -691,65 +772,127 @@ export default function AirCanvas() {
   };
 
   const endCall = () => {
-    window.location.reload(); 
+    window.location.reload();
   };
 
   const sendEmoji = (emojiStr) => {
     spawnEmoji(emojiStr, false);
     if (dataConnRef.current && dataConnRef.current.open) {
-        dataConnRef.current.send({ type: 'EMOJI', emoji: emojiStr });
+      dataConnRef.current.send({ type: 'EMOJI', emoji: emojiStr });
     }
   };
 
   const spawnEmoji = (emojiStr, isRemote) => {
-     const newEmoji = { 
-         id: Date.now() + Math.random(), 
-         char: emojiStr, 
-         left: isRemote ? `${70 + Math.random()*20}%` : `${10 + Math.random()*20}%`,
-     };
-     setFloatingEmojis(prev => [...prev, newEmoji]);
-     setTimeout(() => {
-         setFloatingEmojis(prev => prev.filter(e => e.id !== newEmoji.id));
-     }, 4000); 
+    const emjMap = { ThumbsUp: '👍', Flame: '🔥', Smile: '😂', Heart: '💖' };
+    const realEmoji = emjMap[emojiStr] || emojiStr;
+
+    const particles = Array.from({ length: 6 }).map((_, i) => ({
+      id: `p-${Date.now()}-${Math.random()}`,
+      offsetX: (Math.random() - 0.5) * 60,
+      offsetY: (Math.random() - 0.5) * 50,
+      size: Math.random() * 8 + 4,
+      delay: Math.random() * 0.5,
+      color: ['#ff00ff', '#00ffff', '#39ff14', '#ffff00'][Math.floor(Math.random() * 4)]
+    }));
+
+    const newEmoji = {
+      id: Date.now() + Math.random(),
+      char: realEmoji,
+      left: isRemote ? `${70 + Math.random() * 20}%` : `${10 + Math.random() * 20}%`,
+      particles
+    };
+    setFloatingEmojis(prev => [...prev, newEmoji]);
+    setTimeout(() => {
+      setFloatingEmojis(prev => prev.filter(e => e.id !== newEmoji.id));
+    }, 4000);
   };
 
   const copyInviteLink = () => {
-      const url = `${window.location.origin}${window.location.pathname}?room=${peerId}`;
-      navigator.clipboard.writeText(url);
-      showToast('✅ Invite link copied to clipboard!');
+    const url = `${window.location.origin}${window.location.pathname}?room=${peerId}`;
+    navigator.clipboard.writeText(url);
+    showToast('✅ Invite link copied to clipboard!');
   };
 
   const handleNativeStart = () => {
-      setHasStarted(true);
-      if (window.__START_AIR_CANVAS__) {
-          window.__START_AIR_CANVAS__();
-      }
+    if (inputRoomCode.trim()) {
+      const code = inputRoomCode.trim().toUpperCase();
+      setJoinRoomId(code);
+      joinRoomIdRef.current = code;
+      setRemotePeerId(code);
+    }
+    setHasStarted(true);
+    if (window.__START_AIR_CANVAS__) {
+      window.__START_AIR_CANVAS__();
+    }
   };
 
   return (
     <div className={styles.container}>
       {!hasStarted && (
-         <div style={{ position: 'absolute', zIndex: 1000, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(15px)' }}>
-            <h1 style={{ color: '#0ff', fontSize: '3rem', marginBottom: '40px', textShadow: '0 0 20px #0ff', letterSpacing: '8px' }}>AIR CANVAS</h1>
-            
-            <input 
-               type="text"
-               placeholder="Enter your name..."
-               value={localName}
-               onChange={(e) => setLocalName(e.target.value)}
-               className={styles.nameInput}
+        <div className={styles.landingWrapper}>
+          <div className={styles.orb1}></div>
+          <div className={styles.orb2}></div>
+          <div className={styles.orb3}></div>
+
+          {Array.from({ length: 15 }).map((_, i) => (
+            <div
+              key={i}
+              className={styles.floatingShape}
+              style={{
+                left: `${Math.random() * 100}%`,
+                fontSize: `${Math.random() * 4 + 2}rem`,
+                animationDuration: `${Math.random() * 20 + 20}s`,
+                animationDelay: `${Math.random() * -30}s`
+              }}
+            >
+              {Math.random() > 0.5 ? 'X' : 'O'}
+            </div>
+          ))}
+
+          <div className={styles.landingGlassCard}>
+            <h1 className={styles.landingTitle}>AIR DRAW SOS</h1>
+            <p className={styles.landingSubtitle}>Draw X's and O's in mid-air using your webcam. A magical AI multiplayer experience.</p>
+
+            <input
+              type="text"
+              placeholder="Enter your nickname"
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
+              className={styles.landingInput}
+              spellCheck="false"
+              maxLength={15}
             />
 
-            <button 
-               className={styles.btn} 
-               disabled={!localName.trim()}
-               style={{ border: '2px solid #39ff14', color: '#39ff14', fontSize: '1.5rem', padding: '20px 50px', borderRadius: '40px', boxShadow: '0 0 20px rgba(57, 255, 20, 0.3)', cursor: localName.trim() ? 'pointer' : 'not-allowed', background: 'rgba(57, 255, 20, 0.1)', opacity: localName.trim() ? 1 : 0.5, marginTop: '20px' }} 
-               onClick={handleNativeStart}>
-                {joinRoomId ? 'JOIN FRIEND' : 'ENTER GAME'}
+            {!joinRoomId && (
+              <div className={styles.joinCodeSection}>
+                <div className={styles.orDivider}><span>OR</span></div>
+                <input
+                  type="text"
+                  placeholder="ENTER ROOM CODE"
+                  value={inputRoomCode}
+                  onChange={(e) => setInputRoomCode(e.target.value.toUpperCase())}
+                  className={styles.landingInputCode}
+                  spellCheck="false"
+                  maxLength={5}
+                />
+              </div>
+            )}
+
+            <button
+              className={styles.landingBtn}
+              disabled={!localName.trim()}
+              onClick={handleNativeStart}>
+              {joinRoomId || inputRoomCode.trim() ? 'JOIN MATCH' : 'CREATE MATCH'}
             </button>
-            <p style={{ color: '#00ffcc', marginTop: '30px', fontSize: '1rem', opacity: 0.8 }}>Will request Camera & Microphone access securely.</p>
-         </div>
+
+            <div className={styles.landingDisclaimer}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.112l3.18 7.93Z" /></svg>
+              Requires Camera Access
+            </div>
+          </div>
+        </div>
       )}
+
 
       {hasStarted && !isLoaded && !loadError && <div className={styles.loader}>INITIALIZING SYSTEM...</div>}
       {loadError && <div className={styles.loader} style={{ color: '#ff4444', animation: 'none', textAlign: 'center', padding: '0 20px', textShadow: '0 0 10px #ff0000' }}>{loadError}</div>}
@@ -757,23 +900,40 @@ export default function AirCanvas() {
       {isLoaded && (
         <>
           <div className={styles.playerHud}>
-             <div className={styles.playerInfo}>
-                <span style={{ color: '#39ff14' }}>{localName} (You)</span>
-                <span style={{ margin: '0 10px', color: '#fff' }}>vs</span>
-                <span style={{ color: '#f0f' }}>{remoteName || 'Waiting for opponent...'}</span>
-             </div>
-             
-             {showGrid && isInCall && !winner && (
-                 <div style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f', marginTop: '10px', fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none' }}>
-                     {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
-                 </div>
-             )}
+            <div className={styles.playerInfo}>
+              <span style={{ color: '#39ff14' }}>{localName} (You)</span>
+              <span style={{ margin: '0 10px', color: '#fff' }}>vs</span>
+              <span style={{ color: '#f0f' }}>{remoteName || 'Waiting for opponent...'}</span>
+            </div>
 
-             {!isInCall && (
-                 <button className={styles.inviteButton} onClick={copyInviteLink}>
-                     🔗 Copy Invite Link
+            {showGrid && isInCall && !winner && (
+              <div style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f', marginTop: '10px', fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none' }}>
+                {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
+              </div>
+            )}
+
+
+            {!isInCall && (
+              <div className={styles.shareMenuWrapper}>
+                 <button className={styles.inviteButton} onClick={() => setShowShareModal(!showShareModal)}>
+                   <Share2 size={16} /> {showShareModal ? 'CLOSE SHARE MENU' : 'INVITE OPPONENT'}
                  </button>
-             )}
+                 {showShareModal && (
+                   <div className={styles.shareDropdownMenu}>
+                     <div className={styles.codeContainerSmall}>
+                       <span>ROOM CODE</span>
+                       <h2>{peerId || '...'}</h2>
+                     </div>
+                     <div className={styles.qrSmallWrapper}>
+                       <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin + window.location.pathname : ''}?room=${peerId}`} size={110} level="H" includeMargin={true} fgColor="#ff00ff" />
+                     </div>
+                     <button className={styles.copyTinyBtn} onClick={copyInviteLink}>
+                       COPY LINK
+                     </button>
+                   </div>
+                 )}
+              </div>
+            )}
           </div>
 
           {/* <div className={styles.tutorialHUD}>
@@ -788,10 +948,30 @@ export default function AirCanvas() {
         </>
       )}
 
+      {isInCall && ping !== null && (
+        <div className={styles.pingIndicator} style={{ color: getPingColor(ping) }}>
+          ⚡ {ping}ms
+        </div>
+      )}
+
       {floatingEmojis.map(e => (
-         <div key={e.id} className={styles.emojiFly} style={{ left: e.left }}>
-            {e.char}
-         </div>
+        <div key={e.id} className={styles.emojiFlyContainer} style={{ left: e.left }}>
+          <div className={styles.emojiFlyText}>{e.char}</div>
+          {e.particles && e.particles.map(p => (
+            <div
+              key={p.id}
+              className={styles.particle}
+              style={{
+                left: `${p.offsetX}px`,
+                top: `${p.offsetY}px`,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                backgroundColor: p.color,
+                animationDelay: `${p.delay}s`
+              }}
+            />
+          ))}
+        </div>
       ))}
 
       {toastMessage && (
@@ -801,18 +981,6 @@ export default function AirCanvas() {
       )}
 
       {/* Popups */}
-      {eraseRequest && (
-        <div className={styles.popupOverlay}>
-          <div className={styles.popupCard}>
-            <h2>ERASE REQUEST</h2>
-            <p>The remote player requested to delete your drawings!</p>
-            <div className={styles.popupButtons}>
-              <button className={styles.btn} style={{ borderColor: '#39ff14', color: '#39ff14' }} onClick={handleApproveErase}>ALLOW</button>
-              <button className={styles.btn} style={{ borderColor: '#f0f', color: '#f0f' }} onClick={() => setEraseRequest(false)}>DENY</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {winner && (
         <div className={styles.popupOverlay}>
@@ -829,48 +997,58 @@ export default function AirCanvas() {
       <canvas ref={canvasRef} className={styles.canvas}></canvas>
 
       {/* Removed old bulky tools, integrated below */}
-      
+
       {isLoaded && (
         <div className={styles.bottomControls}>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('👍')}>👍</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('🔥')}>🔥</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('😂')}>😂</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('💖')}>💖</button>
-          
+          <button className={styles.emojiBtn} onClick={() => sendEmoji('ThumbsUp')} title="Thumbs Up">👍</button>
+          <button className={styles.emojiBtn} onClick={() => sendEmoji('Flame')} title="Flame">🔥</button>
+          <button className={styles.emojiBtn} onClick={() => sendEmoji('Smile')} title="Smile">😂</button>
+          <button className={styles.emojiBtn} onClick={() => sendEmoji('Heart')} title="Heart">💖</button>
+
           <div className={styles.divider}></div>
 
           <button className={`${styles.controlBtn} ${!isAudioOn ? styles.off : ''}`} onClick={toggleAudio} title="Toggle Audio">
-             {isAudioOn ? '🎤' : '🔇'}
+            {isAudioOn ? <Mic size={24} /> : <MicOff size={24} color="#ff4444" />}
           </button>
           <button className={`${styles.controlBtn} ${!isVideoOn ? styles.off : ''}`} onClick={toggleVideo} title="Toggle Video">
-             {isVideoOn ? '📹' : '📵'}
+            {isVideoOn ? <Video size={24} /> : <VideoOff size={24} color="#ff4444" />}
           </button>
-          
+
           <div className={styles.divider}></div>
-          
-          <button 
-             className={`${styles.controlBtn} ${!showGrid ? styles.off : ''}`} 
-             onClick={() => setShowGrid(!showGrid)}
-             title={showGrid ? "Disable Game Mode (Free Draw)" : "Enable Game Mode (Tic-Tac-Toe)"}
+
+          <button
+            className={`${styles.controlBtn} ${!isDrawingEnabled ? styles.off : ''}`}
+            onClick={() => setIsDrawingEnabled(!isDrawingEnabled)}
+            title={isDrawingEnabled ? "Disable Hand Tracking" : "Enable Hand Tracking"}
           >
-             {showGrid ? '🎲' : '✏️'}
+            <Hand size={24} color={isDrawingEnabled ? "#39ff14" : "#ff4444"} />
           </button>
 
-          <button 
-             className={styles.controlBtn} 
-             style={{ border: myRole === 'X' ? '2px solid #39ff14' : '2px solid #0ff', width: '60px', borderRadius: '15px', fontSize: '1.2rem', fontWeight: 'bold' }} 
-             onClick={handleRoleSwitch}
-             title="Switch Role"
+          <div className={styles.divider}></div>
+
+          <button
+            className={`${styles.controlBtn} ${!showGrid ? styles.off : ''}`}
+            onClick={() => setShowGrid(!showGrid)}
+            title={showGrid ? "Disable Game Mode (Free Draw)" : "Enable Game Mode (Tic-Tac-Toe)"}
           >
-             {myRole}
+            {showGrid ? <Grid3X3 size={24} color="#00ffcc" /> : <Brush size={24} color="#f0f" />}
           </button>
 
-           <button className={styles.controlBtn} onClick={handleClear} title="Erase Board">
-             🗑️
+          <button
+            className={styles.controlBtn}
+            style={{ border: myRole === 'X' ? '2px solid #39ff14' : '2px solid #0ff', width: '60px', borderRadius: '15px', fontSize: '1.2rem', fontWeight: 'bold' }}
+            onClick={handleRoleSwitch}
+            title="Switch Role"
+          >
+            {myRole}
+          </button>
+
+          <button className={styles.controlBtn} onClick={handleClear} title="Erase Board">
+            <Trash2 size={24} color="#ffaa00" />
           </button>
 
           <button className={`${styles.controlBtn} ${styles.danger}`} onClick={endCall} title="End Call">
-             📞
+            <PhoneOff size={24} color="#fff" />
           </button>
         </div>
       )}
