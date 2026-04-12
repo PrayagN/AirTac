@@ -214,48 +214,63 @@ export default function LandingPage({
                       </p>
                     </div>
                     {/* Right: Live XOX Preview */}
-                    <div className="flex-1 w-full flex flex-col items-center gap-4">
+                    <div className="flex-1 w-full flex flex-col items-center gap-5">
                       {/* Players vs Row */}
                       <div className="flex items-center justify-center gap-3 w-full">
                         {/* Player 1 */}
                         <div className="relative">
-                          <div className="w-[88px] h-[72px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                          <div className="w-[150px] h-[150px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
                             <img
                               src="https://randomuser.me/api/portraits/men/32.jpg"
                               alt="Player 1"
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-primary/30 flex items-center justify-center text-primary font-black text-xs shadow-md">X</div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-primary/40 flex items-center justify-center text-primary font-black text-xs shadow-md">X</div>
                         </div>
                         {/* VS */}
                         <div className="px-2.5 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface-variant text-xs font-bold tracking-widest">vs</div>
                         {/* Player 2 */}
                         <div className="relative">
-                          <div className="w-[88px] h-[72px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                          <div className="w-[150px] h-[150px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
                             <img
                               src="https://randomuser.me/api/portraits/women/44.jpg"
                               alt="Player 2"
                               className="w-full h-full object-cover"
                             />
                           </div>
-                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-tertiary/30 flex items-center justify-center text-tertiary font-black text-xs shadow-md">O</div>
+                          <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-tertiary/40 flex items-center justify-center text-tertiary font-black text-xs shadow-md">O</div>
                         </div>
                       </div>
-                      {/* 3x3 Game Grid */}
-                      <div className="grid grid-cols-3 gap-2 w-full max-w-[220px]">
-                        {/* Row 1 */}
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-primary font-black text-2xl">X</div>
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
-                        {/* Row 2 */}
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary font-black text-2xl">O</div>
-                        <div className="aspect-square rounded-xl bg-[#2a2c34] border border-primary/20 shadow-[0_0_12px_rgba(143,245,255,0.15)] flex items-center justify-center text-primary font-black text-2xl">X</div>
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
-                        {/* Row 3 */}
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary font-black text-2xl">O</div>
-                        <div className="aspect-square rounded-xl bg-surface-container-high flex items-center justify-center" />
+                      {/* 3x3 Game Grid — divider-line style matching Stitch design */}
+                      <div className="w-full max-w-[280px] rounded-2xl overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.08)]" style={{ background: 'rgba(24,25,32,0.45)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+                        {[
+                          [null, 'X', null],
+                          ['X', 'X_HL', null],
+                          ['O', null, null],
+                        ].map((row, ri) => (
+                          <div
+                            key={ri}
+                            className="flex"
+                            style={{ borderBottom: ri < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}
+                          >
+                            {row.map((cell, ci) => (
+                              <div
+                                key={ci}
+                                className="flex-1 flex items-center justify-center font-black text-2xl"
+                                style={{
+                                  aspectRatio: '1',
+                                  borderRight: ci < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                                  background: cell === 'X_HL' ? '#24252d' : 'transparent',
+                                  color: (cell === 'X' || cell === 'X_HL') ? 'var(--color-primary, #8ff5ff)' : cell === 'O' ? 'var(--color-tertiary, #ff51fa)' : 'transparent',
+                                  boxShadow: cell === 'X_HL' ? 'inset 0 0 18px rgba(143,245,255,0.10)' : 'none',
+                                }}
+                              >
+                                {cell === 'X_HL' ? 'X' : cell}
+                              </div>
+                            ))}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -417,8 +432,8 @@ export default function LandingPage({
                         key={avatarName}
                         onClick={() => setLocalAvatar(avatarName)}
                         className={`cursor-pointer rounded-2xl border-2 p-2 flex items-center justify-center transition-all ${localAvatar === avatarName
-                            ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105'
-                            : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
+                          ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105'
+                          : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
                           }`}
                       >
                         <img
