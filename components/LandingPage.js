@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import FeedbackChatbot from './FeedbackChatbot';
 
 function ScrollReveal({ children, delay = 0, className = "" }) {
   return (
@@ -19,6 +20,8 @@ function ScrollReveal({ children, delay = 0, className = "" }) {
 export default function LandingPage({
   localName,
   setLocalName,
+  localAvatar,
+  setLocalAvatar,
   inputRoomCode,
   setInputRoomCode,
   handleNativeStart,
@@ -26,6 +29,13 @@ export default function LandingPage({
   const [showInputModal, setShowInputModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'join'
   const autoOpenedRef = useRef(false);
+  const [avatarOptions, setAvatarOptions] = useState(['Felix', 'Aneka', 'Jasper', 'Oliver', 'Sophia', 'Zoe']);
+
+  const randomizeAvatars = () => {
+    const newAvatars = Array(6).fill(0).map(() => Math.random().toString(36).substring(7));
+    setAvatarOptions(newAvatars);
+    setLocalAvatar(newAvatars[0]);
+  };
 
   useEffect(() => {
     if (inputRoomCode && !autoOpenedRef.current) {
@@ -265,17 +275,43 @@ export default function LandingPage({
 
               <div className="space-y-4 mb-8">
                 <div>
-                  <label className="block text-secondary text-sm font-bold mb-2">NICNAME</label>
+                  <label className="block text-secondary text-sm font-bold mb-2">NICKNAME</label>
                   <input
                     type="text"
                     autoFocus
                     placeholder="Enter your nickname"
                     value={localName}
                     onChange={(e) => setLocalName(e.target.value)}
-                    className="w-full px-5 py-3 rounded-xl bg-surface-container-highest border border-outline-variant/30 text-on-surface font-semibold focus:outline-none focus:border-primary transition-colors"
+                    className="w-full px-5 py-3 rounded-xl bg-surface-container-highest border border-outline-variant/30 text-on-surface font-semibold focus:outline-none focus:border-primary transition-colors mb-6"
                     spellCheck="false"
                     maxLength={15}
                   />
+                  <div className="flex justify-between items-center mb-4">
+                    <label className="text-secondary text-sm font-bold uppercase tracking-widest">Choose Your Avatar</label>
+                    <button onClick={randomizeAvatars} className="flex items-center gap-1 text-primary hover:text-primary-container transition-colors text-xs font-bold uppercase tracking-widest">
+                      <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>refresh</span>
+                      Shuffle
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {avatarOptions.map((avatarName) => (
+                      <div 
+                        key={avatarName}
+                        onClick={() => setLocalAvatar(avatarName)}
+                        className={`cursor-pointer rounded-2xl border-2 p-2 flex items-center justify-center transition-all ${
+                          localAvatar === avatarName 
+                            ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105' 
+                            : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
+                        }`}
+                      >
+                        <img 
+                          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`} 
+                          alt="Avatar Option"
+                          className="w-16 h-16 drop-shadow-md"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {modalMode === 'join' && (
@@ -296,14 +332,21 @@ export default function LandingPage({
 
               <div className="flex gap-4">
                 <button onClick={() => setShowInputModal(false)} className="flex-1 py-3 rounded-full border border-outline-variant/30 text-secondary hover:bg-surface-container transition-all">Cancel</button>
-                <button onClick={submitModal} disabled={!localName.trim()} className="flex-1 py-3 rounded-full bg-primary text-on-primary font-bold hover:opacity-90 disabled:opacity-50 transition-all">
-                  {modalMode === 'join' ? 'Join Now' : 'Start'}
+                <button 
+                  onClick={submitModal} 
+                  disabled={!localName.trim() || (modalMode === 'join' && inputRoomCode.trim().length !== 5)} 
+                  className="flex-1 py-3 rounded-full bg-primary text-on-primary font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {modalMode === 'join' ? 'Join Now' : 'Start Session'}
                 </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Feedback Chatbot Widget ── */}
+      <FeedbackChatbot />
     </div>
   );
 }

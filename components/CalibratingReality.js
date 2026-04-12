@@ -54,11 +54,11 @@ export default function CalibratingReality() {
       <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-64">
         <div className="h-[2px] w-full bg-surface-container-highest rounded-full overflow-hidden relative">
           <div className="absolute top-0 left-0 h-full w-1/3 bg-gradient-to-r from-transparent via-primary to-transparent blur-[2px]" style={{ left: '20%' }}></div>
-          <div className="h-full bg-primary shadow-[0_0_15px_rgba(192,193,255,0.6)]" style={{ width: '42%' }}></div>
+          <div className="h-full bg-primary shadow-[0_0_15px_rgba(192,193,255,0.6)]" style={{ width: '90%' }}></div>
         </div>
         <div className="flex justify-between items-center mt-3">
           <span className="text-[9px] font-label text-primary/40 tracking-tighter">DATA_STREAM: ACTIVE</span>
-          <span className="text-[9px] font-label text-primary tracking-widest">42%</span>
+          <span className="text-[9px] font-label text-primary tracking-widest">90%</span>
         </div>
       </div>
 
