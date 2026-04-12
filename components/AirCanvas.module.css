@@ -42,18 +42,10 @@
 }
 
 .videoPip {
-  position: absolute;
-  width: 250px;
-  height: 150px;
-  bottom: 20px;
-  right: 20px;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   transform: scaleX(-1);
-  border: 2px solid #0ff;
-  border-radius: 12px;
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-  z-index: 50;
-  transition: all 0.5s ease;
 }
 
 .remoteVideo {
@@ -61,7 +53,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  z-index: 2; 
+  z-index: 0; 
 }
 
 .canvas {
@@ -431,29 +423,57 @@
   font-weight: bold;
 }
 
-/* Toast Messages */
+/* Toast Messages - Premium Modern UI */
 .toast {
-  position: absolute;
-  top: 100px;
+  position: fixed;
+  top: 110px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(255, 0, 0, 0.85);
-  color: #fff;
-  padding: 15px 30px;
-  border: 2px solid #ff0000;
-  box-shadow: 0 0 20px #ff0000;
-  border-radius: 8px;
-  font-weight: 900;
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  z-index: 200;
-  text-transform: uppercase;
-  animation: slideDown 0.3s ease-out;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(2, 6, 23, 0.95));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.25);
+  color: #f8fafc;
+  padding: 14px 32px;
+  border-radius: 100px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  z-index: 9999;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    0 0 30px rgba(99, 102, 241, 0.2);
+  animation: toastEntry 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  white-space: nowrap;
 }
 
-@keyframes slideDown {
-  from { top: 50px; opacity: 0; }
-  to { top: 100px; opacity: 1; }
+.toast::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #38bdf8;
+  box-shadow: 0 0 12px #38bdf8, 0 0 24px #38bdf8;
+  flex-shrink: 0;
+}
+
+@keyframes toastEntry {
+  from { 
+    top: 80px; 
+    opacity: 0; 
+    transform: translate(-50%, 0) scale(0.9);
+  }
+  to { 
+    top: 110px; 
+    opacity: 1; 
+    transform: translate(-50%, 0) scale(1);
+  }
 }
 
 /* Premium Landing Page Styles */

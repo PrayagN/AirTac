@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function ScrollReveal({ children, delay = 0, className = "" }) {
@@ -25,6 +25,15 @@ export default function LandingPage({
 }) {
   const [showInputModal, setShowInputModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create' or 'join'
+  const autoOpenedRef = useRef(false);
+
+  useEffect(() => {
+    if (inputRoomCode && !autoOpenedRef.current) {
+      setModalMode('join');
+      setShowInputModal(true);
+      autoOpenedRef.current = true;
+    }
+  }, [inputRoomCode]);
 
   const openJoinModal = () => {
     setModalMode('join');

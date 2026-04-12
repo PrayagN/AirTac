@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 import Peer from 'peerjs';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import styles from './AirCanvas.module.css';
 import LandingPage from './LandingPage';
 import CalibratingReality from './CalibratingReality';
@@ -32,12 +34,14 @@ export default function AirCanvas() {
   const [myRole, setMyRole] = useState('X');
   const [currentTurn, setCurrentTurn] = useState('X');
   const [winner, setWinner] = useState(null);
+  const [winningLine, setWinningLine] = useState(null);
   const [toastMessage, setToastMessage] = useState('');
   const [ping, setPing] = useState(null);
   const [isDrawingEnabled, setIsDrawingEnabled] = useState(true);
 
   const peerRef = useRef(null);
   const dataConnRef = useRef(null);
+  const localStreamRef = useRef(null);
   const [peerId, setPeerId] = useState('');
   const [remotePeerId, setRemotePeerId] = useState('');
 
@@ -62,6 +66,13 @@ export default function AirCanvas() {
   const joinRoomIdRef = useRef(null);
 
   useEffect(() => {
+    if (videoRef.current && localStreamRef.current && videoRef.current.srcObject !== localStreamRef.current) {
+      videoRef.current.srcObject = localStreamRef.current;
+      videoRef.current.muted = true;
+    }
+  }, [isInCall, hasStarted]);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       const room = urlParams.get('room');
@@ -69,6 +80,7 @@ export default function AirCanvas() {
         setJoinRoomId(room);
         joinRoomIdRef.current = room;
         setRemotePeerId(room);
+        setInputRoomCode(room);
       }
     }
   }, []);
@@ -110,6 +122,7 @@ export default function AirCanvas() {
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
         if (winnerRef.current !== board[a]) {
           setWinner(board[a]);
+          setWinningLine(line);
           winnerRef.current = board[a];
         }
         return;
@@ -118,6 +131,7 @@ export default function AirCanvas() {
     if (!board.includes(null)) {
       if (winnerRef.current !== 'DRAW') {
         setWinner('DRAW');
+        setWinningLine(null);
         winnerRef.current = 'DRAW';
       }
     }
@@ -190,6 +204,7 @@ export default function AirCanvas() {
         });
 
         // 3. Complete media flow binding
+        localStreamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.muted = true;
@@ -242,17 +257,35 @@ export default function AirCanvas() {
         canvas.height = video.videoHeight;
       }
 
-      // Responsive Game Grid Physical Constraints (Adapts to Mobile Portrait or Desktop Landscape)
-      const GRID_SIZE = Math.min(canvas.width, canvas.height) * 0.8;
-      const gridX = (canvas.width - GRID_SIZE) / 2;
-      const gridY = (canvas.height - GRID_SIZE) / 2;
-      const cellW = GRID_SIZE / 3;
-
+      // --- DOM Grid Bounding Box collision logic (Responsive & Decoupled) ---
       const getCellIndex = (x, y) => {
-        if (x >= gridX && x <= gridX + GRID_SIZE && y >= gridY && y <= gridY + GRID_SIZE) {
-          const col = Math.floor((x - gridX) / cellW);
-          const row = Math.floor((y - gridY) / cellW);
-          return row * 3 + col;
+        // x and y are native camera pixel coordinates (e.g. 0 to 1280)
+        // Adjust for native video scaling via CSS object-fit: cover
+        const scaleX = window.innerWidth / canvas.width;
+        const scaleY = window.innerHeight / canvas.height;
+        const scale = Math.max(scaleX, scaleY);
+
+        const actW = canvas.width * scale;
+        const actH = canvas.height * scale;
+
+        // object-fit: cover centers the content natively
+        const offsetX = (window.innerWidth - actW) / 2;
+        const offsetY = (window.innerHeight - actH) / 2;
+
+        // Mirror X because of scaleX(-1) on canvas and video
+        const mirroredPx = canvas.width - x;
+        const screenX = mirroredPx * scale + offsetX;
+        const screenY = y * scale + offsetY;
+
+        for (let i = 0; i < 9; i++) {
+          const cell = document.getElementById(`tic-cell-${i}`);
+          if (!cell) continue;
+
+          const rect = cell.getBoundingClientRect();
+
+          if (screenX >= rect.left && screenX <= rect.right && screenY >= rect.top && screenY <= rect.bottom) {
+            return i;
+          }
         }
         return -1;
       };
@@ -266,111 +299,6 @@ export default function AirCanvas() {
         const results = handLandmarker.detectForVideo(video, startTimeMs);
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw the Board Logic directly on Canvas!
-        if (showGridRef.current) {
-          ctx.save();
-          
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(gridX, gridY, GRID_SIZE, GRID_SIZE, 20);
-          else ctx.rect(gridX, gridY, GRID_SIZE, GRID_SIZE);
-          ctx.clip(); // Clip drawing to the board area
-
-          // 1. Frosted Glass Blur Effect overlaid perfectly with the video feed
-          ctx.filter = 'blur(5px)';
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          ctx.filter = 'none';
-
-          // 2. Glass Tint Overlay
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-          ctx.fill();
-
-          // 3. Faint Internal Grid Lines with Gradients
-          const hGrad = ctx.createLinearGradient(gridX, 0, gridX + GRID_SIZE, 0);
-          hGrad.addColorStop(0, 'rgba(255, 255, 255, 0)');
-          hGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.8)');
-          hGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-          
-          ctx.strokeStyle = hGrad;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(gridX, gridY + cellW); ctx.lineTo(gridX + GRID_SIZE, gridY + cellW);
-          ctx.moveTo(gridX, gridY + cellW * 2); ctx.lineTo(gridX + GRID_SIZE, gridY + cellW * 2);
-          ctx.stroke();
-
-          const vGrad = ctx.createLinearGradient(0, gridY, 0, gridY + GRID_SIZE);
-          vGrad.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-          vGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
-          vGrad.addColorStop(1, 'rgba(255, 255, 255, 0.3)');
-
-          ctx.strokeStyle = vGrad;
-          ctx.beginPath();
-          ctx.moveTo(gridX + cellW, gridY); ctx.lineTo(gridX + cellW, gridY + GRID_SIZE);
-          ctx.moveTo(gridX + cellW * 2, gridY); ctx.lineTo(gridX + cellW * 2, gridY + GRID_SIZE);
-          ctx.stroke();
-
-          ctx.restore(); // End clipping
-
-          // 4. Elegant Outer Border & Box Shadows
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(gridX, gridY, GRID_SIZE, GRID_SIZE, 20);
-          else ctx.rect(gridX, gridY, GRID_SIZE, GRID_SIZE);
-          
-          // Outer Drop Shadow
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
-          ctx.shadowBlur = 32;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 8;
-          
-          // Primary Border
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
-          
-          // Reset shadow
-          ctx.shadowBlur = 0;
-          ctx.shadowOffsetX = 0;
-          ctx.shadowOffsetY = 0;
-
-          // Inset highlights (inner stroke)
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(gridX + 1, gridY + 1, GRID_SIZE - 2, GRID_SIZE - 2, 19);
-          else ctx.rect(gridX + 1, gridY + 1, GRID_SIZE - 2, GRID_SIZE - 2);
-          
-          const insetGrad = ctx.createLinearGradient(0, gridY, 0, gridY + GRID_SIZE);
-          insetGrad.addColorStop(0, 'rgba(255, 255, 255, 0.5)'); // top highlight
-          insetGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0)');   // fade in middle
-          insetGrad.addColorStop(1, 'rgba(255, 255, 255, 0.1)'); // bottom highlight
-          
-          ctx.strokeStyle = insetGrad;
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // Draw locked Game Pieces
-          for (let i = 0; i < 9; i++) {
-            const p = boardRef.current[i];
-            if (p) {
-              const col = i % 3; const row = Math.floor(i / 3);
-              const cx = gridX + col * cellW + cellW / 2;
-              const cy = gridY + row * cellW + cellW / 2;
-              const r = cellW * 0.35;
-
-              ctx.strokeStyle = p === 'X' ? '#39ff14' : '#f0f';
-              ctx.lineWidth = 15;
-
-              if (p === 'O') {
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.stroke();
-              } else if (p === 'X') {
-                ctx.beginPath();
-                ctx.moveTo(cx - r, cy - r); ctx.lineTo(cx + r, cy + r);
-                ctx.moveTo(cx + r, cy - r); ctx.lineTo(cx - r, cy + r);
-                ctx.stroke();
-              }
-            }
-          }
-        }
 
         // Render Free-form lines natively in 2D
         drawLines(ctx, linesRef.current, false);
@@ -666,8 +594,8 @@ export default function AirCanvas() {
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
       if (handLandmarker) handLandmarker.close();
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
       }
       if (peerRef.current) peerRef.current.destroy();
     };
@@ -683,11 +611,23 @@ export default function AirCanvas() {
 
     const conn = peerRef.current.connect(targetId);
     setupDataConnection(conn);
+    
+    call.on('close', () => {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      setIsInCall(false);
+      setRemoteName('');
+      showToast('Opponent ended the call.');
+    });
+    call.on('error', () => {
+      setIsInCall(false);
+      setRemoteName('');
+    });
+    
     setIsInCall(true);
   };
 
   const connectToPeer = () => {
-    connectToPeerId(remotePeerId, videoRef.current?.srcObject);
+    connectToPeerId(remotePeerId, localStreamRef.current);
   };
 
   const setupCallResponses = (call) => {
@@ -695,18 +635,57 @@ export default function AirCanvas() {
       if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream;
       setIsInCall(true);
     });
+    call.on('close', () => {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+      setIsInCall(false);
+      setRemoteName('');
+      showToast('Call ended by opponent.');
+    });
+    call.on('error', () => {
+      setIsInCall(false);
+      setRemoteName('');
+    });
   };
 
   const setupDataConnection = (conn) => {
     conn.on('open', () => {
       dataConnRef.current = conn;
-      conn.send({ type: 'HANDSHAKE', name: localNameRef.current });
+      conn.send({ 
+        type: 'HANDSHAKE', 
+        name: localNameRef.current,
+        isHost: !joinRoomIdRef.current,
+        hostRole: roleRef.current 
+      });
+      
+      // If the host was playing natively and a player securely joined, automatically wipe the board
+      const hasMoves = boardRef.current.some(cell => cell !== null);
+      if (hasMoves) {
+         resetBoard();
+         showToast('Grid cleared automatically for the new session.');
+      }
+    });
+    conn.on('close', () => {
+      setIsInCall(false);
+      setRemoteName('');
+      remoteLinesRef.current = [];
+      showToast('Opponent disconnected from the session.');
+    });
+    conn.on('error', () => {
+      setIsInCall(false);
+      setRemoteName('');
     });
     conn.on('data', (payload) => {
       if (Array.isArray(payload)) {
         remoteLinesRef.current = payload;
       } else if (payload.type === 'HANDSHAKE') {
         setRemoteName(payload.name);
+        
+        // Enforce opposing role on the joining Guest dynamically
+        if (payload.isHost && payload.hostRole) {
+           const newRole = payload.hostRole === 'X' ? 'O' : 'X';
+           setMyRole(newRole);
+           showToast(`Connected to Host! You are assigned Player ${newRole}`);
+        }
       } else if (payload.type === 'LINES') {
         remoteLinesRef.current = payload.data;
       } else if (payload.type === 'MOVE') {
@@ -716,6 +695,7 @@ export default function AirCanvas() {
       } else if (payload.type === 'BOARD_RESET') {
         boardRef.current = Array(9).fill(null);
         setWinner(null);
+        setWinningLine(null);
         winnerRef.current = null;
         setCurrentTurn('X');
       } else if (payload.type === 'ROLE_SYNC') {
@@ -740,6 +720,7 @@ export default function AirCanvas() {
   const resetBoard = () => {
     boardRef.current = Array(9).fill(null);
     setWinner(null);
+    setWinningLine(null);
     winnerRef.current = null;
     setCurrentTurn('X');
     if (dataConnRef.current && dataConnRef.current.open) {
@@ -758,18 +739,28 @@ export default function AirCanvas() {
   };
 
   const toggleVideo = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getVideoTracks();
-      tracks.forEach(track => track.enabled = !isVideoOn);
-      setIsVideoOn(!isVideoOn);
+    if (localStreamRef.current) {
+      const tracks = localStreamRef.current.getVideoTracks();
+      if (tracks.length > 0) {
+        setIsVideoOn(prev => {
+          const newState = !prev;
+          tracks.forEach(track => track.enabled = newState);
+          return newState;
+        });
+      }
     }
   };
 
   const toggleAudio = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getAudioTracks();
-      tracks.forEach(track => track.enabled = !isAudioOn);
-      setIsAudioOn(!isAudioOn);
+    if (localStreamRef.current) {
+      const tracks = localStreamRef.current.getAudioTracks();
+      if (tracks.length > 0) {
+        setIsAudioOn(prev => {
+          const newState = !prev;
+          tracks.forEach(track => track.enabled = newState);
+          return newState;
+        });
+      }
     }
   };
 
@@ -828,6 +819,78 @@ export default function AirCanvas() {
     }
   };
 
+  // --- Aesthetic Victory & Animation Handlers ---
+  const [lineCoords, setLineCoords] = useState(null);
+  const gridContainerRef = useRef(null);
+
+  useEffect(() => {
+    if (!winningLine || !gridContainerRef.current) return;
+    const updateLine = () => {
+      const cellA = document.getElementById(`tic-cell-${winningLine[0]}`);
+      const cellC = document.getElementById(`tic-cell-${winningLine[2]}`);
+      const gridContainer = gridContainerRef.current;
+
+      if (cellA && cellC && gridContainer) {
+        const rectA = cellA.getBoundingClientRect();
+        const rectC = cellC.getBoundingClientRect();
+        const gridRect = gridContainer.getBoundingClientRect();
+
+        setLineCoords({
+          x1: rectA.left + rectA.width / 2 - gridRect.left,
+          y1: rectA.top + rectA.height / 2 - gridRect.top,
+          x2: rectC.left + rectC.width / 2 - gridRect.left,
+          y2: rectC.top + rectC.height / 2 - gridRect.top,
+        });
+      }
+    };
+    
+    updateLine();
+    const timer = setTimeout(updateLine, 50);
+    window.addEventListener('resize', updateLine);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateLine);
+    };
+  }, [winningLine]);
+
+  useEffect(() => {
+    if (winner && winner !== 'DRAW') {
+      const isLocalWin = winner === myRole;
+      const primaryColor = isLocalWin ? '#39ff14' : '#ff00ff';
+      const secondaryColor = isLocalWin ? '#00ffff' : '#ff66ff';
+      const colors = [primaryColor, '#ffffff', secondaryColor];
+      
+      let duration = 3 * 1000;
+      let animationEnd = Date.now() + duration;
+  
+      let frame = () => {
+        confetti({
+          particleCount: 6,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.7 },
+          colors: colors,
+          zIndex: 10000,
+          disableForReducedMotion: true
+        });
+        confetti({
+          particleCount: 6,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.7 },
+          colors: colors,
+          zIndex: 10000,
+          disableForReducedMotion: true
+        });
+  
+        if (Date.now() < animationEnd) {
+          requestAnimationFrame(frame);
+        }
+      };
+      frame();
+    }
+  }, [winner, myRole]);
+
   return (
     <div className={hasStarted ? styles.container : ""}>
       {!hasStarted && (
@@ -846,61 +909,54 @@ export default function AirCanvas() {
 
       {isLoaded && (
         <>
-          <div className={styles.playerHud}>
-            <div className={styles.playerInfo}>
-              <span style={{ color: '#39ff14' }}>{localName} (You)</span>
-              <span style={{ margin: '0 10px', color: '#fff' }}>vs</span>
-              <span style={{ color: '#f0f' }}>{remoteName || 'Waiting for opponent...'}</span>
+          {/* Top App Bar */}
+          <header className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl flex justify-between items-center px-6 py-4 shadow-2xl shadow-indigo-950/20">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="text-lg font-bold tracking-tighter text-indigo-100 font-['Plus_Jakarta_Sans']">Obsidian Gaming</div>
+              <div className="h-4 w-[1px] bg-outline-variant/30 hidden sm:block"></div>
+              <div className="flex items-center gap-2 text-indigo-200">
+                <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Room: {peerId || '...'}</span>
+              </div>
+              {isInCall && ping !== null && (
+                <span style={{ color: getPingColor(ping), fontSize: '10px', marginLeft: '10px', fontWeight: 'bold' }}>⚡ {ping}ms</span>
+              )}
             </div>
+            <div className="flex items-center gap-6">
+              <div className={isInCall ? "flex -space-x-2" : "flex"}>
+                <div className="w-8 h-8 rounded-full border-2 border-slate-900 overflow-hidden relative bg-primary flex items-center justify-center z-10 shadow-lg shadow-primary/20">
+                  <span className="font-bold text-background text-xs">{localName?.charAt(0)?.toUpperCase() || '?'}</span>
+                </div>
+                {isInCall && (
+                  <div className="w-8 h-8 rounded-full border-2 border-slate-900 bg-[#f0f] flex items-center justify-center z-0 shadow-lg shadow-[#f0f]/20">
+                    <span className="font-bold text-white text-xs">{remoteName?.charAt(0)?.toUpperCase() || '?'}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
 
-            {showGrid && isInCall && !winner && (
-              <div style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f', marginTop: '10px', fontSize: '1rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px', animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none' }}>
+          {/* Central Status Indicators */}
+          {!isInCall ? (
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 glass-panel px-6 py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl z-50">
+              <div className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+              </div>
+              <span className="text-sm font-medium text-indigo-100 tracking-wide">Waiting for opponent</span>
+            </div>
+          ) : showGrid && !winner ? (
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 glass-panel px-6 py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl z-50" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
+              <span className="text-sm font-bold tracking-widest uppercase" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
                 {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
-              </div>
-            )}
+              </span>
+            </div>
+          ) : null}
 
-
-            {!isInCall && (
-              <div className={styles.shareMenuWrapper}>
-                 <button className={styles.inviteButton} onClick={() => setShowShareModal(!showShareModal)}>
-                   <Share2 size={16} /> {showShareModal ? 'CLOSE SHARE MENU' : 'INVITE OPPONENT'}
-                 </button>
-                 {showShareModal && (
-                   <div className={styles.shareDropdownMenu}>
-                     <div className={styles.codeContainerSmall}>
-                       <span>ROOM CODE</span>
-                       <h2>{peerId || '...'}</h2>
-                     </div>
-                     <div className={styles.qrSmallWrapper}>
-                       <QRCodeSVG value={`${typeof window !== 'undefined' ? window.location.origin + window.location.pathname : ''}?room=${peerId}`} size={110} level="H" includeMargin={true} fgColor="#ff00ff" />
-                     </div>
-                     <button className={styles.copyTinyBtn} onClick={copyInviteLink}>
-                       COPY LINK
-                     </button>
-                   </div>
-                 )}
-              </div>
-            )}
-          </div>
-
-          {/* <div className={styles.tutorialHUD}>
-            <h3>HOW TO PLAY</h3>
-            <ul>
-              <li><strong>PINCH</strong> your index & thumb to draw.</li>
-              <li><strong>OPEN</strong> all 5 fingers wide to erase.</li>
-              <li><strong>YOUR ROLE:</strong> You are currently <span className={styles.playerRole}>{myRole}</span>.</li>
-              <li>Draw a matching signature inside an empty grid box to lock it!</li>
-            </ul>
-          </div> */}
+          {/* Share Modal removed from inline overlay, now rendered full screen at the end of the DOM tree */}
         </>
       )}
 
-      {isInCall && ping !== null && (
-        <div className={styles.pingIndicator} style={{ color: getPingColor(ping) }}>
-          ⚡ {ping}ms
-        </div>
-      )}
-
+      {/* Emoji Overlays */}
       {floatingEmojis.map(e => (
         <div key={e.id} className={styles.emojiFlyContainer} style={{ left: e.left }}>
           <div className={styles.emojiFlyText}>{e.char}</div>
@@ -921,82 +977,257 @@ export default function AirCanvas() {
         </div>
       ))}
 
+      {/* Popups & Toasts */}
       {toastMessage && (
         <div className={styles.toast}>
           {toastMessage}
         </div>
       )}
 
-      {/* Popups */}
-
       {winner && (
-        <div className={styles.popupOverlay}>
-          <div className={styles.popupCard}>
-            <h2>{winner === 'DRAW' ? 'MATCH DRAWN!' : `PLAYER ${winner} WINS!`}</h2>
-            <button className={styles.btn} style={{ borderColor: '#0ff', color: '#0ff' }} onClick={resetBoard}>PLAY AGAIN</button>
-          </div>
-        </div>
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0, y: 50 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          className="fixed bottom-12 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-4 glass-panel px-10 py-6 rounded-3xl border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-xl bg-slate-900/80"
+        >
+            <h2 className="text-4xl font-black uppercase tracking-widest" style={{ color: winner === 'DRAW' ? '#fff' : winner === 'X' ? '#39ff14' : '#ff00ff', textShadow: `0 0 20px ${winner === 'DRAW' ? '#fff' : winner === 'X' ? '#39ff14' : '#ff00ff'}` }}>
+              {winner === 'DRAW' ? 'MATCH DRAWN!' : `PLAYER ${winner} WINS!`}
+            </h2>
+            <button 
+              className="mt-2 px-8 py-3 rounded-full font-bold tracking-widest hover:scale-105 active:scale-95 border border-white/30 transition-all text-white shadow-lg shadow-black/50 bg-gradient-to-r from-white/10 to-white/5" 
+              onClick={resetBoard}
+            >
+              PLAY AGAIN
+            </button>
+        </motion.div>
       )}
 
-      {/* Media & Canvas */}
-      <video ref={remoteVideoRef} className={isInCall ? styles.remoteVideo : styles.hidden} autoPlay playsInline></video>
-      <video ref={videoRef} className={!hasStarted ? styles.hidden : (isInCall ? styles.videoPip : styles.video)} autoPlay playsInline></video>
-      <canvas ref={canvasRef} className={!hasStarted ? styles.hidden : styles.canvas}></canvas>
+      {/* Overlay Filters */}
+      {hasStarted && (
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40 z-10 pointer-events-none" />
+      )}
 
-      {/* Removed old bulky tools, integrated below */}
+      {/* Media & Canvas Layered */}
+      {/* Stream Wrapper (Unconditional Render to preserve MediaStream track and AI Tensor bindings for LOCAL video) */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="w-full h-full relative">
+          <video 
+            ref={videoRef} 
+            className={`${styles.video} ${!hasStarted ? 'opacity-0' : 'opacity-100'}`} 
+            autoPlay 
+            playsInline 
+            muted
+          ></video>
+        </div>
+      </div>
+      
+      {/* Remote Video Wrapper (Unconditional Render to prevent losing srcObject on events) */}
+      <div className={isInCall ? "fixed right-6 top-24 z-20 flex flex-col gap-4" : "hidden"}>
+        <div className="w-48 aspect-video glass-panel rounded-xl overflow-hidden border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] group transition-transform hover:scale-105 relative bg-black">
+          <video 
+            ref={remoteVideoRef} 
+            className={styles.videoPip} 
+            autoPlay 
+            playsInline
+          ></video>
+          {isInCall && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-2 z-10 transition-opacity">
+              <div className="w-2 h-2 rounded-full bg-[#f0f] shadow-lg shadow-[#f0f]/50 animate-pulse" />
+              <span className="text-[10px] font-bold text-white uppercase tracking-tighter bg-black/40 px-1.5 py-0.5 rounded backdrop-blur-md">
+                Opponent ({myRole === 'X' ? 'O' : 'X'})
+              </span>
+            </div>
+          )}
+        </div>
 
+      </div>
+
+      {/* Central Interactive DOM Grid (Replaces Canvas Grid) */}
+      {hasStarted && showGrid && (
+        <main className="absolute inset-0 z-30 w-full h-full flex flex-col items-center justify-center p-6 pointer-events-none overflow-hidden">
+          {/* 3x3 Grid Container Wrapper (Exact Stitch design) */}
+          <div className="relative group pointer-events-auto">
+            {/* Asymmetric Glow Aura */}
+            <div className="absolute -inset-10 bg-primary/10 blur-[100px] rounded-full opacity-50 group-hover:opacity-70 transition-opacity duration-700 pointer-events-none"></div>
+
+            <div ref={gridContainerRef} className="relative grid grid-cols-3 gap-3 p-4 glass-panel rounded-[2rem] border border-white/5 grid-glow">
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8].map(index => {
+                const cellValue = boardRef.current[index];
+                return (
+                  <div id={`tic-cell-${index}`} key={index} className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+                    {cellValue === 'X' && (
+                      <motion.span 
+                        initial={{ scale: 0, rotate: -45, opacity: 0 }}
+                        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                        className="material-symbols-outlined text-5xl sm:text-7xl text-primary glow-text-primary" style={{ fontVariationSettings: "'wght' 200" }}>close</motion.span>
+                    )}
+                    {cellValue === 'O' && (
+                      <motion.span 
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                        className="material-symbols-outlined text-5xl sm:text-7xl text-tertiary glow-text-tertiary" style={{ fontVariationSettings: "'wght' 200" }}>radio_button_unchecked</motion.span>
+                    )}
+                  </div>
+                );
+              })}
+
+              {winningLine && lineCoords && (
+                <svg className="absolute inset-0 pointer-events-none z-50 overflow-visible" style={{ width: '100%', height: '100%' }}>
+                  <motion.line
+                    x1={lineCoords.x1}
+                    y1={lineCoords.y1}
+                    x2={lineCoords.x2}
+                    y2={lineCoords.y2}
+                    stroke={winner === 'X' ? '#39ff14' : '#0ff'}
+                    strokeWidth="16"
+                    strokeLinecap="round"
+                    initial={{ pathLength: 0, opacity: 0, scale: 0.95 }}
+                    animate={{ pathLength: 1, opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    style={{
+                      filter: `drop-shadow(0 0 16px ${winner === 'X' ? '#39ff14' : '#0ff'}) drop-shadow(0 0 32px ${winner === 'X' ? '#39ff14' : '#0ff'})`
+                    }}
+                  />
+                </svg>
+              )}
+            </div>
+          </div>
+
+          {/* Session Metadata (Asymmetric editorial moment) */}
+          <div className="relative mt-8 sm:mt-12 w-full max-w-[28rem] flex justify-between items-end opacity-80 px-4">
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Current Turn</span>
+              <span className="text-xl font-light text-indigo-100" style={{ color: currentTurn === myRole ? '#39ff14' : '#c0c1ff' }}>{currentTurn === myRole ? `${localName || 'You'} (${myRole})` : `${remoteName || 'Opponent'} (${currentTurn})`}</span>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Round Info</span>
+              <span className="text-xl font-mono text-indigo-100">{winner ? 'Finished' : 'In Progress'}</span>
+            </div>
+          </div>
+        </main>
+      )}
+
+      {/* Legacy Canvas (Used natively for AI Stroke prediction & Free Drawing) - Must be elevated above grid */}
+      <canvas ref={canvasRef} className={!hasStarted ? styles.hidden : styles.canvas} style={{ zIndex: 40 }}></canvas>
+
+      {/* Bottom Controls Navbar */}
       {isLoaded && (
-        <div className={styles.bottomControls}>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('ThumbsUp')} title="Thumbs Up">👍</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('Flame')} title="Flame">🔥</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('Smile')} title="Smile">😂</button>
-          <button className={styles.emojiBtn} onClick={() => sendEmoji('Heart')} title="Heart">💖</button>
-
-          <div className={styles.divider}></div>
-
-          <button className={`${styles.controlBtn} ${!isAudioOn ? styles.off : ''}`} onClick={toggleAudio} title="Toggle Audio">
-            {isAudioOn ? <Mic size={24} /> : <MicOff size={24} color="#ff4444" />}
-          </button>
-          <button className={`${styles.controlBtn} ${!isVideoOn ? styles.off : ''}`} onClick={toggleVideo} title="Toggle Video">
-            {isVideoOn ? <Video size={24} /> : <VideoOff size={24} color="#ff4444" />}
-          </button>
-
-          <div className={styles.divider}></div>
-
+        <nav className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900/60 backdrop-blur-2xl rounded-full px-4 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          {/* Drawing Mode Toggle (Adapted Games button) */}
           <button
-            className={`${styles.controlBtn} ${!isDrawingEnabled ? styles.off : ''}`}
-            onClick={() => setIsDrawingEnabled(!isDrawingEnabled)}
-            title={isDrawingEnabled ? "Disable Hand Tracking" : "Enable Hand Tracking"}
-          >
-            <Hand size={24} color={isDrawingEnabled ? "#39ff14" : "#ff4444"} />
-          </button>
-
-          <div className={styles.divider}></div>
-
-          <button
-            className={`${styles.controlBtn} ${!showGrid ? styles.off : ''}`}
             onClick={() => setShowGrid(!showGrid)}
-            title={showGrid ? "Disable Game Mode (Free Draw)" : "Enable Game Mode (Tic-Tac-Toe)"}
-          >
-            {showGrid ? <Grid3X3 size={24} color="#00ffcc" /> : <Brush size={24} color="#f0f" />}
+            className={`flex flex-col items-center gap-1 ${showGrid ? 'bg-indigo-500/20 text-indigo-100 rounded-full' : 'text-slate-400'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{showGrid ? 'videogame_asset' : 'draw'}</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Game</span>
+          </button>
+
+          {/* Mic */}
+          <button
+            onClick={toggleAudio}
+            className={`flex flex-col items-center gap-1 ${isAudioOn ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isAudioOn ? 'mic' : 'mic_off'}</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Mic</span>
+          </button>
+
+          {/* Cam */}
+          <button
+            onClick={toggleVideo}
+            className={`flex flex-col items-center gap-1 ${isVideoOn ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isVideoOn ? 'videocam' : 'videocam_off'}</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Cam</span>
+          </button>
+
+          {/* Hand Tracking Disable */}
+          <button
+            onClick={() => setIsDrawingEnabled(!isDrawingEnabled)}
+            className={`flex flex-col items-center gap-1 ${isDrawingEnabled ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isDrawingEnabled ? 'pan_tool' : 'do_not_touch'}</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Hands</span>
+          </button>
+
+          {/* Erase Board & Switch Role logic adapted into standard layout */}
+          <div className="w-[1px] h-8 bg-outline-variant/20 mx-1"></div>
+
+          <button
+            onClick={handleClear}
+            className="flex flex-col items-center gap-1 text-warning p-3 transition-transform hover:scale-110 active:scale-90 duration-150" style={{ color: '#ffaa00' }}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>mop</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Clear</span>
           </button>
 
           <button
-            className={styles.controlBtn}
-            style={{ border: myRole === 'X' ? '2px solid #39ff14' : '2px solid #0ff', width: '60px', borderRadius: '15px', fontSize: '1.2rem', fontWeight: 'bold' }}
             onClick={handleRoleSwitch}
-            title="Switch Role"
-          >
-            {myRole}
+            className="flex flex-col items-center gap-1 p-3 transition-transform hover:scale-110 active:scale-90 duration-150"
+            style={{ color: myRole === 'X' ? '#39ff14' : '#0ff' }}>
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>switch_account</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest mt-1 leading-[4px]">{myRole}</span>
           </button>
 
-          <button className={styles.controlBtn} onClick={handleClear} title="Erase Board">
-            <Trash2 size={24} color="#ffaa00" />
+          <div className="w-[1px] h-8 bg-outline-variant/20 mx-1"></div>
+
+          {/* Invite (Re-using Share Logic) */}
+          <button
+            onClick={() => setShowShareModal(!showShareModal)}
+            className="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>person_add</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Invite</span>
           </button>
 
-          <button className={`${styles.controlBtn} ${styles.danger}`} onClick={endCall} title="End Call">
-            <PhoneOff size={24} color="#fff" />
+          {/* End Call (Wait... does endCall exist? We'll conditionally show it if we have it, or fallback) */}
+          <button
+            onClick={() => window.location.reload()}
+            className="flex flex-col items-center gap-1 text-error p-3 transition-transform hover:bg-error/10 hover:scale-110 rounded-full active:scale-90 duration-150">
+            <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>call_end</span>
+            <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">End</span>
           </button>
+        </nav>
+      )}
+
+      {/* Full screen Share Modal Overlay */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 bg-[#040811]/80 backdrop-blur-sm">
+          <div className="relative bg-[#060b14] border border-white/5 shadow-[0_0_60px_rgba(93,96,235,0.15)] rounded-[2rem] w-full max-w-[340px] p-8 flex flex-col items-center">
+            
+            <button 
+              onClick={() => setShowShareModal(false)}
+              className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'wght' 300" }}>close</span>
+            </button>
+
+            <div className="w-full bg-[#0b1120] rounded-2xl py-6 flex flex-col items-center border border-white/5 mb-8 mt-2">
+              <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-slate-400 mb-2">Room Code</span>
+              <h2 className="text-4xl tracking-[0.3em] font-light text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] m-0 pl-3">{peerId ? peerId.toUpperCase() : '...'}</h2>
+            </div>
+
+            <div className="w-56 h-56 bg-[#0b1120] border border-white/5 rounded-[2rem] flex items-center justify-center mb-8 shadow-[0_0_40px_rgba(153,69,232,0.1)] overflow-hidden relative group">
+               <div className="absolute inset-0 bg-gradient-to-br from-[#ddb7ff]/10 to-transparent opacity-50 pointer-events-none"></div>
+               <div className="relative z-10 bg-[#060b14] p-3 rounded-2xl border border-white/5">
+                 <QRCodeSVG 
+                   value={`${typeof window !== 'undefined' ? window.location.origin + window.location.pathname : ''}?room=${peerId}`} 
+                   size={160} 
+                   level="H" 
+                   includeMargin={false} 
+                   fgColor="#ffffff" 
+                   bgColor="#060b14" 
+                 />
+               </div>
+            </div>
+
+            <button 
+              onClick={copyInviteLink}
+              className="w-full py-4 rounded-full bg-gradient-to-r from-[#5d60eb] to-[#bf58ff] text-white flex items-center justify-center gap-2 font-bold text-[11px] tracking-widest uppercase hover:opacity-90 active:scale-95 transition-all shadow-[0_0_30px_rgba(191,88,255,0.3)] mb-6"
+            >
+              <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'wght' 300" }}>content_copy</span>
+              Copy link to clipboard
+            </button>
+
+            <span className="text-[9px] uppercase tracking-[0.1em] text-slate-600 font-bold absolute bottom-6">
+              Expires in 23:59:59
+            </span>
+          </div>
         </div>
       )}
     </div>

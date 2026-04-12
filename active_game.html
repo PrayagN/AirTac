@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Obsidian Gaming - In-Session</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#fff6ff",
+                        "primary": "#c0c1ff",
+                        "primary-container": "#5d60eb",
+                        "on-primary-container": "#faf7ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#9945e8",
+                        "secondary-container": "#3e495d",
+                        "inverse-surface": "#dae2fd",
+                        "on-secondary-fixed": "#111c2d",
+                        "surface-variant": "#2d3449",
+                        "inverse-on-surface": "#283044",
+                        "surface-tint": "#c0c1ff",
+                        "outline": "#908fa0",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary": "#263143",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "background": "#0b1326",
+                        "tertiary": "#ddb7ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-primary": "#1000a9",
+                        "surface": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "secondary-fixed": "#d8e3fb",
+                        "surface-container": "#171f33",
+                        "surface-container-low": "#131b2e",
+                        "surface-bright": "#31394d",
+                        "on-secondary-container": "#aeb9d0",
+                        "on-tertiary": "#490080",
+                        "on-primary-fixed": "#07006c",
+                        "outline-variant": "#464555",
+                        "error-container": "#93000a",
+                        "on-tertiary-fixed": "#2c0051",
+                        "on-background": "#dae2fd",
+                        "inverse-primary": "#494bd6",
+                        "on-surface-variant": "#c7c4d7",
+                        "error": "#ffb4ab",
+                        "on-surface": "#dae2fd",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "primary-fixed": "#e1e0ff",
+                        "surface-dim": "#0b1326",
+                        "secondary": "#bcc7de",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "tertiary-fixed": "#f0dbff",
+                        "on-secondary-fixed-variant": "#3c475a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(11, 19, 38, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .glow-text-primary {
+            text-shadow: 0 0 15px rgba(192, 193, 255, 0.6);
+        }
+        .glow-text-tertiary {
+            text-shadow: 0 0 15px rgba(221, 183, 255, 0.6);
+        }
+        .grid-glow {
+            box-shadow: 0 0 40px rgba(93, 96, 235, 0.15);
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body overflow-hidden h-screen w-screen selection:bg-primary/30">
+<!-- Full-screen Video Background -->
+<div class="fixed inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="Cinematic wide shot of a high-end gaming room with ambient indigo lighting, silhouettes of gaming gear, and a soft blurred depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr4YUYIm0lpjhs9GwgZE32dXgMicm6y8ElYh-obUd5cN122SJYeKZk45leGrhRfnrfR086gtdsJa1wshcOiRbc23KlfYAz2Qozbx-9lWfsqqqwqk-qPhlZ1vaONJgo8VOetCpeOqVBwLd-RU-ZF8b88-0XmfQ_GDRie_kjSaz0rEvDukPbryyefeXn2dgxClpzzvO60Ab6YzTNfYdbHd7oxzQ4AGX5A5VhwH8wZyoOtoEMyQ4OL3A_t39ybkPf8srJZzj70oxmCrh4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40"></div>
+</div>
+<!-- Floating Particles Decor -->
+<div class="absolute inset-0 z-1 pointer-events-none opacity-40">
+<div class="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-primary animate-float" style="animation-delay: 0s;"></div>
+<div class="absolute top-3/4 left-1/3 w-1.5 h-1.5 rounded-full bg-tertiary animate-float" style="animation-delay: 1s;"></div>
+<div class="absolute top-1/2 right-1/4 w-2.5 h-2.5 rounded-full bg-primary-container animate-float" style="animation-delay: 0.5s;"></div>
+<div class="absolute top-1/4 right-1/3 w-1 h-1 rounded-full bg-white animate-float" style="animation-delay: 2s;"></div>
+</div>
+<!-- Shared TopAppBar Component -->
+<header class="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl flex justify-between items-center px-6 py-4 shadow-2xl shadow-indigo-950/20">
+<div class="flex items-center gap-4">
+<div class="text-lg font-bold tracking-tighter text-indigo-100 font-['Plus_Jakarta_Sans'] tracking-tight">Obsidian Gaming</div>
+<div class="h-4 w-[1px] bg-outline-variant/30"></div>
+<div class="flex items-center gap-2 text-indigo-200">
+<span class="material-symbols-outlined text-sm" data-icon="stadium">stadium</span>
+<span class="text-xs font-semibold uppercase tracking-widest opacity-80">Room: Neo-Tokyo #42</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-background overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="close-up portrait of a young man with a friendly smile and warm studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDywieiBPv4RMgXm53u_YQt5kV-uyd9SWqnIOCCWFasZ8icA9fy-_nfPF9Lrt-nYPiKX5L7B-ivsB1cRUPsZK49zt6leOyTi9aFltA5rU4WKaLp36r-lm0B6t7jiaP7ubrEkoFt1SCIG-i34SICdys4UIOQ-y3cg11YnQrvDWk23qRqfb7rQfkjzaGB8IH1lgtEe8I4qRAF4fnYjIKlTX5s-ra8LrH6hcolzo-PBqV0TXJfiNPvyNaEByzU-tvNBMkwisvV2XXWIt6"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-background bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-xs text-indigo-300" data-icon="person_search">person_search</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-slate-400 hover:bg-white/10 transition-colors rounded-full active:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</button>
+<button class="p-2 text-slate-400 hover:bg-white/10 transition-colors rounded-full active:opacity-80 active:scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas: Tic-Tac-Toe Grid -->
+<main class="relative z-10 w-full h-full flex flex-col items-center justify-center p-6">
+<!-- Waiting Indicator -->
+<div class="mb-12 glass-panel px-6 py-2 rounded-full flex items-center gap-3 border border-outline-variant/20 shadow-xl animate-float">
+<div class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+</div>
+<span class="text-sm font-medium text-indigo-100 tracking-wide">Waiting for opponent</span>
+</div>
+<!-- 3x3 Grid Container -->
+<div class="relative group">
+<!-- Asymmetric Glow Aura -->
+<div class="absolute -inset-10 bg-primary/10 blur-[100px] rounded-full opacity-50 group-hover:opacity-70 transition-opacity duration-700"></div>
+<div class="grid grid-cols-3 gap-3 p-4 glass-panel rounded-[2rem] border border-white/5 grid-glow">
+<!-- Row 1 -->
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+<span class="material-symbols-outlined text-5xl sm:text-7xl text-primary glow-text-primary" data-icon="close" style="font-variation-settings: 'wght' 200;">close</span>
+</div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer"></div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+<span class="material-symbols-outlined text-5xl sm:text-7xl text-tertiary glow-text-tertiary" data-icon="radio_button_unchecked" style="font-variation-settings: 'wght' 200;">radio_button_unchecked</span>
+</div>
+<!-- Row 2 -->
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer"></div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+<span class="material-symbols-outlined text-5xl sm:text-7xl text-primary glow-text-primary" data-icon="close" style="font-variation-settings: 'wght' 200;">close</span>
+</div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer"></div>
+<!-- Row 3 -->
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer group/cell">
+<span class="material-symbols-outlined text-5xl sm:text-7xl text-tertiary glow-text-tertiary" data-icon="radio_button_unchecked" style="font-variation-settings: 'wght' 200;">radio_button_unchecked</span>
+</div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer"></div>
+<div class="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all cursor-pointer"></div>
+</div>
+</div>
+<!-- Session Metadata (Asymmetric editorial moment) -->
+<div class="mt-12 w-full max-w-lg flex justify-between items-end opacity-60 px-4">
+<div class="flex flex-col">
+<span class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Current Turn</span>
+<span class="text-xl font-light text-indigo-100">Hyperion Prime</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Elapsed</span>
+<span class="text-xl font-mono text-indigo-100">04:12</span>
+</div>
+</div>
+</main>
+<!-- Shared BottomNavBar Component -->
+<nav class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900/60 backdrop-blur-2xl rounded-full px-4 py-2 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+<!-- Games (Active Tab Logic) -->
+<button class="flex flex-col items-center gap-1 bg-indigo-500/20 text-indigo-100 rounded-full p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="videogame_asset">videogame_asset</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Games</span>
+</button>
+<!-- Mic -->
+<button class="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="mic">mic</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Mic</span>
+</button>
+<!-- Cam -->
+<button class="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="videocam">videocam</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Cam</span>
+</button>
+<!-- React -->
+<button class="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="add_reaction">add_reaction</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">React</span>
+</button>
+<!-- Invite -->
+<button class="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="person_add">person_add</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Invite</span>
+</button>
+<div class="w-[1px] h-8 bg-outline-variant/20 mx-1"></div>
+<!-- End -->
+<button class="flex flex-col items-center gap-1 text-error p-3 transition-transform hover:bg-error/10 hover:scale-110 rounded-full active:scale-90 duration-150">
+<span class="material-symbols-outlined text-xl" data-icon="call_end">call_end</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">End</span>
+</button>
+</nav>
+<!-- Side Player Video PIP (Secondary Surface) -->
+<div class="fixed right-6 top-24 z-20 flex flex-col gap-4">
+<div class="w-48 aspect-video glass-panel rounded-xl overflow-hidden border border-white/10 shadow-2xl group transition-transform hover:scale-105">
+<img class="w-full h-full object-cover" data-alt="POV over the shoulder view of a high-end keyboard with soft RGB lighting in a dark room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8goTbbYC1jOvNyYJBvhqKAi_w1ssmEKQmVBAuBrSaXkvodzaiiWi80r0DBHrDLmP8F3xH4ZUDpIullLGzjSpq6EbejLApLC81e58nvmc8oIiu4IVSfjHYiA3e6huP6ylbSvmms_0Qm5c-fuefv9kEe1wSufDX_g4Eow_mPe4EOiYTUeonahcd4Ui2qsKNg2NzUbf20KCcumDQvOGZcx16y7dWUDJeiQ-kBIcmm_CKF2NLuFVfpdyfAiu9TxRH_Un89cHQRYVjnIt9"/>
+<div class="absolute bottom-2 left-2 flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary shadow-lg shadow-primary/50"></div>
+<span class="text-[10px] font-bold text-white uppercase tracking-tighter bg-black/40 px-1.5 rounded">Me</span>
+</div>
+</div>
+<div class="w-48 aspect-video glass-panel rounded-xl overflow-hidden border border-white/5 bg-surface-container/40 flex items-center justify-center flex-col gap-2">
+<span class="material-symbols-outlined text-slate-500 text-3xl animate-pulse" data-icon="face">face</span>
+<span class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Opponent</span>
+</div>
+</div>
+</body></html>
