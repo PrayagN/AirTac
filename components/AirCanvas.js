@@ -6,6 +6,7 @@ import Peer from 'peerjs';
 import { QRCodeSVG } from 'qrcode.react';
 import styles from './AirCanvas.module.css';
 import LandingPage from './LandingPage';
+import CalibratingReality from './CalibratingReality';
 import {
   Mic, MicOff,
   Video, VideoOff,
@@ -840,7 +841,7 @@ export default function AirCanvas() {
       )}
 
 
-      {hasStarted && !isLoaded && !loadError && <div className={styles.loader}>INITIALIZING SYSTEM...</div>}
+      {hasStarted && !isLoaded && !loadError && <CalibratingReality />}
       {loadError && <div className={styles.loader} style={{ color: '#ff4444', animation: 'none', textAlign: 'center', padding: '0 20px', textShadow: '0 0 10px #ff0000' }}>{loadError}</div>}
 
       {isLoaded && (

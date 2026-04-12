@@ -42,3 +42,36 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+@keyframes calibrating-float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(2deg); }
+}
+@keyframes calibrating-rotate-slow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes calibrating-rotate-fast {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+@keyframes calibrating-pulse-glow {
+  0%, 100% { opacity: 0.4; filter: blur(40px); }
+  50% { opacity: 0.8; filter: blur(60px); }
+}
+@keyframes calibrating-particle-drift {
+  from { transform: translateY(0) translateX(0); opacity: 0; }
+  50% { opacity: 0.6; }
+  to { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+}
+.calibrating-shard-glow {
+  background: radial-gradient(circle, rgba(192, 193, 255, 0.4) 0%, rgba(93, 96, 235, 0.1) 60%, transparent 100%);
+}
+.calibrating-obsidian-dust {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #c0c1ff;
+  border-radius: 50%;
+  pointer-events: none;
+}
