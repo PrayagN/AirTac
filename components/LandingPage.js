@@ -48,9 +48,21 @@ export default function LandingPage({
 
   // Detect mobile / tablet and show a "use Desktop Mode" toast
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. Check if manually dismissed before
+    const isDismissed = localStorage.getItem('hideMobileToast') === 'true';
+    if (isDismissed) return;
+
+    // 2. Detect device characteristics
     const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     const isNarrow = window.innerWidth < 1024;
-    if (isTouchDevice || isNarrow) {
+
+    // 3. Detect if "Desktop Mode" is enabled (UA usually removes "Mobi", "Android", etc.)
+    const isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // Only show if (touch/narrow) AND still using a Mobile User Agent
+    if ((isTouchDevice || isNarrow) && isMobileUA) {
       setShowMobileToast(true);
     }
   }, []);
@@ -121,7 +133,10 @@ export default function LandingPage({
 
             {/* Dismiss */}
             <button
-              onClick={() => setShowMobileToast(false)}
+              onClick={() => {
+                setShowMobileToast(false);
+                localStorage.setItem('hideMobileToast', 'true');
+              }}
               aria-label="Dismiss"
               style={{
                 flexShrink: 0,
