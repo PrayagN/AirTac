@@ -37,10 +37,22 @@ a {
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
-.obsidian-gradient-text {
-  background: linear-gradient(to right, #c0c1ff, #ddb7ff);
+.playonmeet-gradient {
+  background: linear-gradient(to right, #c0c1ff, #ddb7ff, #ffffff);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.on-capsule {
+  background: rgba(192, 193, 255, 0.1);
+  border: 1px solid rgba(192, 193, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.6em;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  color: #c0c1ff;
+  box-shadow: 0 0 15px rgba(192, 193, 255, 0.2);
 }
 
 .glow-text-primary {

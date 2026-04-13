@@ -3,7 +3,7 @@ import React from 'react';
 export default function CalibratingReality() {
   return (
     <div className="bg-background text-on-background font-body h-screen w-screen overflow-hidden flex flex-col items-center justify-center fixed inset-0 z-50">
-      {/* Atmospheric Particles (Obsidian Dust) */}
+      {/* Atmospheric Particles (PlayOnMeet Dust) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="calibrating-obsidian-dust absolute bottom-[-10px] left-[10%]" style={{ animation: 'calibrating-particle-drift 8s linear infinite' }}></div>
         <div className="calibrating-obsidian-dust absolute bottom-[-10px] left-[30%]" style={{ animation: 'calibrating-particle-drift 12s linear infinite 2s' }}></div>
@@ -43,10 +43,10 @@ export default function CalibratingReality() {
       {/* Text Metadata */}
       <div className="mt-24 text-center z-20">
         <h2 className="text-primary font-headline text-sm tracking-[0.4em] uppercase font-light opacity-80 mb-2">
-          Calibrating Reality
+          Syncing Universe
         </h2>
         <p className="text-secondary font-label text-[10px] tracking-widest uppercase opacity-40">
-          Syncing Nexus Sequence 09-X
+          Syncing PlayOnMeet Nexus Sequence
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export default function CalibratingReality() {
 
       {/* Subtle Brand Anchor */}
       <div className="fixed top-12 left-1/2 -translate-x-1/2 pointer-events-none">
-        <span className="font-headline text-xs tracking-[0.6em] font-black text-primary/20 uppercase">Obsidian Arena</span>
+        <span className="font-headline text-xs tracking-[0.6em] font-black text-primary/20 uppercase">PlayOnMeet</span>
       </div>
 
       {/* Corner Decorative Elements */}

@@ -11,88 +11,116 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const BASE_URL = "https://www.gesturegame.io"; // 🔁 update when domain is live
+const BASE_URL = "https://www.playonmeet.com";
 
 export const metadata = {
   // ── Primary SEO ──────────────────────────────────────────────
   title: {
-    default:    "GestureGame — Gesture-Controlled Webcam Game | No Download",
-    template:   "%s | GestureGame",
+    default: "PlayOnMeet — Best Games to Play on Google Meet & Zoom | No Download",
+    template: "%s | PlayOnMeet",
   },
   description:
-    "Play a real-time SOS strategy game using hand gestures — no controller, no download. " +
-    "Works on Google Meet, Zoom, or any video call. The best webcam multiplayer game for 2 players.",
+    "Play interactive gesture-controlled SOS games directly on Google Meet, Zoom, or Teams. " +
+    "No controller or download needed. The #1 webcam multiplayer game for remote teams and friends.",
 
   // ── Canonical + Robots ───────────────────────────────────────
   metadataBase: new URL(BASE_URL),
-  alternates: { canonical: "/" },
+  alternates: { 
+    canonical: "/" 
+  },
   robots: {
-    index:            true,
-    follow:           true,
+    index: true,
+    follow: true,
     googleBot: {
-      index:          true,
-      follow:         true,
-      "max-snippet":  -1,
+      index: true,
+      follow: true,
+      "max-snippet": -1,
       "max-image-preview": "large",
       "max-video-preview": -1,
     },
   },
 
-  // ── Keywords (still read by some crawlers) ───────────────────
+  // ── Keywords (Optimized for Video Call Gaming) ───────────────
   keywords: [
-    "gesture game",
-    "gesture controlled game",
-    "hand gesture game browser",
-    "webcam multiplayer game",
-    "games to play on Google Meet",
-    "games to play on video call",
-    "2 player browser game no download",
+    "playonmeet",
+    "play on meet",
+    "games to play on google meet",
+    "google meet games",
+    "zoom multiplayer games",
+    "games for video calls",
+    "webcam games for 2 players",
     "SOS strategy game online",
-    "air drawing game",
-    "hand tracking game",
-    "multiplayer game with camera",
-    "duo games online",
+    "hand tracking browser game",
+    "gesture controlled game",
+    "online games for remote teams",
+    "interactive zoom activities",
+    "hand gesture game",
   ],
 
-  // ── Open Graph (Facebook / LinkedIn / Discord) ────────────────
+  // ── Open Graph (Search & Social) ──────────────────────────────
   openGraph: {
-    type:        "website",
-    url:         BASE_URL,
-    siteName:    "GestureGame",
-    title:       "GestureGame — Play with Hand Gestures on Any Video Call",
+    type: "website",
+    url: BASE_URL,
+    siteName: "PlayOnMeet",
+    title: "PlayOnMeet — Gesture-Controlled Games for Video Calls",
     description:
-      "Control an SOS strategy game with your bare hands. No download, no app. " +
-      "Works instantly on Google Meet, Zoom, or any browser. Challenge a friend now.",
+      "Transform your video calls into a game room. Play with your hands—no download required. " +
+      "Compatible with Google Meet, Zoom, and Microsoft Teams.",
     images: [
       {
-        url:    "/og-image.png",   // ← create a 1200×630 preview image in /public
-        width:  1200,
+        url: "/og-image.png",
+        width: 1200,
         height: 630,
-        alt:    "GestureGame — Gesture-Controlled Multiplayer Game",
+        alt: "PlayOnMeet — The Ultimate Video Call Game Platform",
       },
     ],
   },
 
-  // ── Twitter / X Card ─────────────────────────────────────────
+  // ── Twitter Card ──────────────────────────────────────────────
   twitter: {
-    card:        "summary_large_image",
-    title:       "GestureGame — Draw in the Air, Play with a Friend",
-    description:
-      "Real-time hand-gesture SOS game. No download. Play on Google Meet or Zoom right now.",
-    images:      ["/og-image.png"],
-    creator:     "@gesturegame",  // 🔁 update to your handle
+    card: "summary_large_image",
+    title: "PlayOnMeet — Real-time WebCam Games",
+    description: "Multiplayer SOS game with hand gestures. Works on Google Meet/Zoom. No download.",
+    images: ["/og-image.png"],
+    creator: "@playonmeet",
   },
 
-  // ── Icons ─────────────────────────────────────────────────────
+  // ── Functional Metadata ───────────────────────────────────────
+  applicationName: "PlayOnMeet",
+  category: "Game",
   icons: {
-    icon:       "/feedback-icon.png",
-    apple:      "/feedback-icon.png",
-    shortcut:   "/feedback-icon.png",
+    icon: "/feedback-icon.png",
+    apple: "/feedback-icon.png",
+    shortcut: "/feedback-icon.png",
   },
+};
 
-  // ── App metadata ──────────────────────────────────────────────
-  applicationName: "GestureGame",
-  category:        "game",
+// JSON-LD Structured Data for Maximum SEO Indexing
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "name": "PlayOnMeet",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any Browser",
+      "url": BASE_URL,
+      "description": "Multiplayer gesture-controlled games for video conferencing platforms.",
+      "featureList": "Hand tracking, No download, Real-time multiplayer, Google Meet integration",
+      "screenshot": `${BASE_URL}/og-image.png`
+    },
+    {
+      "@type": "VideoGame",
+      "name": "SOS Strategy Game",
+      "gamePlatform": "Web Browser",
+      "numberOfPlayers": "2",
+      "genre": "Strategy",
+      "author": {
+        "@type": "Organization",
+        "name": "PlayOnMeet"
+      }
+    }
+  ]
 };
 
 export const viewport = {
@@ -108,8 +136,14 @@ export default function RootLayout({ children }) {
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
-      <body className="bg-surface text-on-surface">{children}</body>
+      <body className="bg-surface text-on-surface">
+        {children}
+      </body>
     </html>
   );
 }

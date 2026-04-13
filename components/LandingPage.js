@@ -3,6 +3,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FeedbackChatbot from './FeedbackChatbot';
 
+function BrandLogo({ className = "" }) {
+  return (
+    <div className={`flex items-center gap-1.5 font-['Plus_Jakarta_Sans'] ${className}`}>
+      <span className="font-light tracking-tight text-white/70">PLAY</span>
+      <span className="on-capsule">ON</span>
+      <span className="font-extrabold tracking-tighter playonmeet-gradient">MEET</span>
+    </div>
+  );
+}
+
 function ScrollReveal({ children, delay = 0, className = "" }) {
   return (
     <motion.div
@@ -159,7 +169,7 @@ export default function LandingPage({
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-xl dark:bg-[#0b1326]/60 shadow-[0_8px_32px_0_rgba(11,19,38,0.08)]">
         <div className="flex justify-between items-center w-full px-8 py-6 max-w-7xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
-          <div className="text-2xl font-bold tracking-tighter text-[#c0c1ff]">Obsidian Gaming</div>
+          <BrandLogo className="text-2xl" />
           <div className="hidden md:flex items-center gap-8">
             <a className="text-[#c0c1ff] font-semibold border-b border-[#c0c1ff]/30 transition-opacity duration-300" href="#">How it works</a>
             <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#games">Games</a>
@@ -177,19 +187,46 @@ export default function LandingPage({
           <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 z-10">
               <ScrollReveal delay={100}>
-                <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase">The Future of Interaction</span>
-                <h1 className="text-5xl lg:text-7xl font-extrabold tracking-tighter leading-[1.1] mb-8 obsidian-gradient-text">
-                  Social Gaming,<br />Redefined.
-                </h1>
+                <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase">Multiplayer Social Gaming</span>
+                <div className="relative py-8">
+                  <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-none relative">
+                    <div className="relative z-10 flex flex-col items-start gap-2">
+                      <span className="text-white">Social</span>
+                      <span className="playonmeet-gradient ml-12 lg:ml-20">Gaming,</span>
+                      <span className="text-white/40 italic lg:ml-40">Redefined.</span>
+                    </div>
+
+                    {/* The Cyber Ribbon Wave */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible" viewBox="0 0 400 200">
+                      <motion.path
+                        d="M 20 40 Q 150 10 200 100 T 380 160"
+                        fill="none"
+                        stroke="url(#cyber-grad)"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear", repeatType: "loop" }}
+                      />
+                      <defs>
+                        <linearGradient id="cyber-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#c0c1ff" stopOpacity="0" />
+                          <stop offset="50%" stopColor="#c0c1ff" stopOpacity="1" />
+                          <stop offset="100%" stopColor="#ddb7ff" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </h1>
+                </div>
                 <p className="text-xl text-secondary max-w-xl mb-12 leading-relaxed">
-                  Experience the next evolution of social play. Obsidian blends seamless video calls with high-fidelity interactive gaming for a lounge-style digital experience.
+                  The ultimate gesture-controlled gaming experience for video calls. PlayOnMeet brings seamless multiplayer games to your remote sessions—no download, just pure interaction.
                 </p>
                 <div className="flex flex-wrap gap-6">
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openJoinModal} className="px-10 py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg hover:opacity-90 shadow-xl shadow-primary/20 transition-opacity duration-300">
-                    Enter Room Code
+                    Join Game Room
                   </motion.button>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-10 py-4 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface font-bold text-lg hover:bg-surface-variant transition-colors duration-300">
-                    Learn More
+                    Start Session
                   </motion.button>
                 </div>
               </ScrollReveal>
@@ -197,7 +234,7 @@ export default function LandingPage({
             <div className="lg:col-span-5 relative">
               <ScrollReveal delay={300}>
                 <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden glass-panel border border-outline-variant/10 shadow-2xl">
-                  <img className="w-full h-full object-cover opacity-80" alt="abstract 3D rendered floating geometric obsidian shapes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo6QeQXNMpoiUm-GMk6BFZ_i-5MrfD66rESvKOvL_6xde8vyPxeTCXNBEe8oOlnE2JhRrYZejgA_fuMUGSQK4xgexSbxat-I5hp_LgmGHXfOoTv11kuCgzZwDh43AY2_aETs3et8f3sr9DG6qQfneMdC1MhGi8GyzfGvV93oFcUIpYc4C1kKtSdXJPTQxFB6XCqsG6m1z6xfqLGFOSSaocqmJRX591u1jTTqwsOKGK0Ik4Oz7nQVNS_Z9e37R8FYB3hEfevDfvRHiJ" />
+                  <img className="w-full h-full object-cover opacity-80" alt="PlayOnMeet — Gesture-controlled multiplayer games for Google Meet and Zoom video calls" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo6QeQXNMpoiUm-GMk6BFZ_i-5MrfD66rESvKOvL_6xde8vyPxeTCXNBEe8oOlnE2JhRrYZejgA_fuMUGSQK4xgexSbxat-I5hp_LgmGHXfOoTv11kuCgzZwDh43AY2_aETs3et8f3sr9DG6qQfneMdC1MhGi8GyzfGvV93oFcUIpYc4C1kKtSdXJPTQxFB6XCqsG6m1z6xfqLGFOSSaocqmJRX591u1jTTqwsOKGK0Ik4Oz7nQVNS_Z9e37R8FYB3hEfevDfvRHiJ" />
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60"></div>
                 </div>
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/20 blur-[100px] rounded-full"></div>
@@ -341,7 +378,7 @@ export default function LandingPage({
                   <h4 className="text-3xl font-bold mb-4">Ludo Master</h4>
                   <div className="px-6 py-2 rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary font-bold text-sm uppercase tracking-widest">Arriving Soon</div>
                   <p className="mt-6 text-on-surface-variant leading-relaxed">
-                    A legendary classic reimagined with Obsidian's premium visual signature and social mechanics.
+                    A legendary classic reimagined with PlayOnMeet's premium visual signature and social mechanics.
                   </p>
                 </motion.div>
               </ScrollReveal>
@@ -365,7 +402,7 @@ export default function LandingPage({
             <div className="max-w-5xl mx-auto glass-panel rounded-[3rem] p-16 text-center border border-primary/10 relative overflow-hidden">
               <div className="absolute -top-24 -left-24 w-64 h-64 bg-primary/10 blur-[80px] rounded-full"></div>
               <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-tertiary/10 blur-[80px] rounded-full"></div>
-              <h2 className="text-5xl font-extrabold mb-8 obsidian-gradient-text leading-tight">Ready to transcend<br />ordinary gaming?</h2>
+              <h2 className="text-5xl font-extrabold mb-8 playonmeet-gradient leading-tight">Ready to transcend<br />ordinary gaming?</h2>
               <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto">Start a session in seconds. No hurdles, no fluff. Just pure, elegant interaction.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-12 py-5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-black text-xl shadow-2xl shadow-primary/30 transition-opacity duration-300">
@@ -382,12 +419,12 @@ export default function LandingPage({
       <footer className="bg-[#0b1326] w-full py-12 px-8 tonal-shift-high">
         <div className="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto gap-8 font-['Plus_Jakarta_Sans'] text-sm">
           <div className="flex flex-col gap-3 text-center md:text-left">
-            <div className="text-lg font-bold text-[#bcc7de]">Obsidian Gaming</div>
-            <div className="text-[#bcc7de] leading-relaxed">© 2026 Obsidian Social Gaming. All rights reserved.</div>
+            <BrandLogo className="text-xl" />
+            <div className="text-[#bcc7de] leading-relaxed">© 2026 PlayOnMeet Social Gaming. All rights reserved.</div>
             <div className="text-[#bcc7de]/60 text-xs tracking-[0.2em] font-semibold mt-2 flex items-center justify-center md:justify-start gap-2">
               BUILT WITH VISIONS BY
               <div className="relative inline-block group cursor-default">
-                <span className="obsidian-gradient-text font-black tracking-normal text-sm group-hover:opacity-0 transition-opacity duration-500">PRAYAG</span>
+                <span className="playonmeet-gradient font-black tracking-normal text-sm group-hover:opacity-0 transition-opacity duration-500">PRAYAG</span>
                 <span className="absolute inset-0 font-black tracking-normal text-sm text-primary opacity-0 group-hover:opacity-100 drop-shadow-[0_0_8px_rgba(192,193,255,0.8)] transition-all duration-500">PRAYAG</span>
               </div>
             </div>
@@ -417,7 +454,7 @@ export default function LandingPage({
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="glass-panel w-full max-w-md rounded-3xl p-8 border border-outline-variant/30 shadow-2xl relative"
             >
-              <h3 className="text-2xl font-bold obsidian-gradient-text mb-6">
+              <h3 className="text-2xl font-bold playonmeet-gradient mb-6">
                 {modalMode === 'join' ? 'Join a Match' : 'Create a Session'}
               </h3>
 
