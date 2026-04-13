@@ -210,7 +210,7 @@ export default function FeedbackChatbot() {
                       color: "#8892b0",
                     }}
                   >
-                    We read every single response 💜
+                    We read every single response
                   </p>
                 </div>
                 <button
@@ -417,7 +417,7 @@ export default function FeedbackChatbot() {
                       transition: "background 0.3s",
                     }}
                   >
-                    {status === "loading" ? "Sending…" : "Send Feedback 🚀"}
+                    {status === "loading" ? "Sending…" : "Send Feedback"}
                   </motion.button>
                 </form>
               )}
