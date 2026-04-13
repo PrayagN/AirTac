@@ -11,14 +11,24 @@ export default function FeedbackChatbot() {
   const [status, setStatus] = useState("idle"); // 'idle' | 'loading' | 'success' | 'error'
   const [errorMsg, setErrorMsg] = useState("");
   const bubbleTimerRef = useRef(null);
+  const hideTimerRef = useRef(null);
 
-  // Show bubble after 10 seconds
+  // Show bubble teaser after 5 seconds, then hide it after 4 seconds
   useEffect(() => {
     bubbleTimerRef.current = setTimeout(() => {
-      if (!isOpen) setShowBubble(true);
+      if (!isOpen) {
+        setShowBubble(true);
+        hideTimerRef.current = setTimeout(() => {
+          setShowBubble(false);
+        }, 4000);
+      }
     }, 5000);
-    return () => clearTimeout(bubbleTimerRef.current);
-  }, []);
+
+    return () => {
+      clearTimeout(bubbleTimerRef.current);
+      clearTimeout(hideTimerRef.current);
+    };
+  }, [isOpen]);
 
   const handleOpen = () => {
     setShowBubble(false);
@@ -114,6 +124,8 @@ export default function FeedbackChatbot() {
         {/* Bot button */}
         <motion.button
           onClick={handleOpen}
+          onMouseEnter={() => !isOpen && setShowBubble(true)}
+          onMouseLeave={() => !isOpen && setShowBubble(false)}
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
           whileHover={{ scale: 1.12, y: 0 }}

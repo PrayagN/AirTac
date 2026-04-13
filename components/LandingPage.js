@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import FeedbackChatbot from './FeedbackChatbot';
 
 function BrandLogo({ className = "" }) {
   return (
-    <div className={`flex items-center gap-1.5 font-['Plus_Jakarta_Sans'] ${className}`}>
+    <div className={`flex items-center gap-1.5 font-['Plus_Jakarta_Sans'] ${className}`} aria-label="PlayOnMeet Logo">
       <span className="font-light tracking-tight text-white/70">PLAY</span>
-      <span className="on-capsule">ON</span>
+      <span className="on-capsule" aria-hidden="true">ON</span>
       <span className="font-extrabold tracking-tighter playonmeet-gradient">MEET</span>
     </div>
   );
@@ -147,7 +148,7 @@ export default function LandingPage({
                 setShowMobileToast(false);
                 localStorage.setItem('hideMobileToast', 'true');
               }}
-              aria-label="Dismiss"
+              aria-label="Dismiss mobility warning"
               style={{
                 flexShrink: 0,
                 background: 'rgba(255,255,255,0.08)',
@@ -167,29 +168,33 @@ export default function LandingPage({
         )}
       </AnimatePresence>
       {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-xl dark:bg-[#0b1326]/60 shadow-[0_8px_32px_0_rgba(11,19,38,0.08)]">
+      <nav className="fixed top-0 w-full z-50 bg-transparent backdrop-blur-xl dark:bg-[#0b1326]/60 shadow-[0_8px_32px_0_rgba(11,19,38,0.08)]" role="navigation">
         <div className="flex justify-between items-center w-full px-8 py-6 max-w-7xl mx-auto font-['Plus_Jakarta_Sans'] tracking-tight">
           <BrandLogo className="text-2xl" />
           <div className="hidden md:flex items-center gap-8">
-            <a className="text-[#c0c1ff] font-semibold border-b border-[#c0c1ff]/30 transition-opacity duration-300" href="#">How it works</a>
-            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#games">Games</a>
+            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#how-to-play" aria-label="Learn how PlayOnMeet works">How it works</a>
+            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#genesis" aria-label="Read our story">Our Story</a>
+            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#games" aria-label="Discover available multiplayer games">Games</a>
           </div>
           <div className="flex items-center gap-4">
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-6 py-2 rounded-full border border-outline-variant/30 text-[#bcc7de] hover:opacity-80 transition-opacity duration-300">Start Session</motion.button>
-            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openJoinModal} className="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-semibold hover:opacity-80 transition-opacity duration-300">Join Room</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-6 py-2 rounded-full border border-outline-variant/30 text-[#bcc7de] hover:opacity-80 transition-opacity duration-300" aria-label="Start a new game session">Start Session</motion.button>
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openJoinModal} className="px-6 py-2 rounded-full bg-primary-container text-on-primary-container font-semibold hover:opacity-80 transition-opacity duration-300" aria-label="Join an existing game room">Join Room</motion.button>
           </div>
         </div>
       </nav>
 
-      <main className="pt-24">
+      <main className="pt-24" id="main-content" role="main">
+        {/* Visually Hidden H1 for Maximum SEO Ranking */}
+        <h1 className="sr-only">Play Games on Google Meet, Zoom & Teams — PlayOnMeet Multiplayer Gestures</h1>
+
         {/* Hero Section */}
-        <section className="relative min-h-[921px] flex items-center overflow-hidden px-8">
+        <section className="relative min-h-[921px] flex items-center overflow-hidden px-8" aria-label="Hero Section">
           <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-7 z-10">
               <ScrollReveal delay={100}>
                 <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium text-sm tracking-wide uppercase">Multiplayer Social Gaming</span>
                 <div className="relative py-8">
-                  <h1 className="text-6xl lg:text-8xl font-black tracking-tighter leading-none relative">
+                  <div className="text-6xl lg:text-8xl font-black tracking-tighter leading-none relative" aria-hidden="true">
                     <div className="relative z-10 flex flex-col items-start gap-2">
                       <span className="text-white">Social</span>
                       <span className="playonmeet-gradient ml-12 lg:ml-20">Gaming,</span>
@@ -216,16 +221,16 @@ export default function LandingPage({
                         </linearGradient>
                       </defs>
                     </svg>
-                  </h1>
+                  </div>
                 </div>
                 <p className="text-xl text-secondary max-w-xl mb-12 leading-relaxed">
                   The ultimate gesture-controlled gaming experience for video calls. PlayOnMeet brings seamless multiplayer games to your remote sessions—no download, just pure interaction.
                 </p>
                 <div className="flex flex-wrap gap-6">
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openJoinModal} className="px-10 py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg hover:opacity-90 shadow-xl shadow-primary/20 transition-opacity duration-300">
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openJoinModal} className="px-10 py-4 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg hover:opacity-90 shadow-xl shadow-primary/20 transition-opacity duration-300" aria-label="Join a private game room with a code">
                     Join Game Room
                   </motion.button>
-                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-10 py-4 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface font-bold text-lg hover:bg-surface-variant transition-colors duration-300">
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-10 py-4 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface font-bold text-lg hover:bg-surface-variant transition-colors duration-300" aria-label="Create a new multiplayer session">
                     Start Session
                   </motion.button>
                 </div>
@@ -234,7 +239,13 @@ export default function LandingPage({
             <div className="lg:col-span-5 relative">
               <ScrollReveal delay={300}>
                 <div className="relative w-full aspect-square rounded-[3rem] overflow-hidden glass-panel border border-outline-variant/10 shadow-2xl">
-                  <img className="w-full h-full object-cover opacity-80" alt="PlayOnMeet — Gesture-controlled multiplayer games for Google Meet and Zoom video calls" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo6QeQXNMpoiUm-GMk6BFZ_i-5MrfD66rESvKOvL_6xde8vyPxeTCXNBEe8oOlnE2JhRrYZejgA_fuMUGSQK4xgexSbxat-I5hp_LgmGHXfOoTv11kuCgzZwDh43AY2_aETs3et8f3sr9DG6qQfneMdC1MhGi8GyzfGvV93oFcUIpYc4C1kKtSdXJPTQxFB6XCqsG6m1z6xfqLGFOSSaocqmJRX591u1jTTqwsOKGK0Ik4Oz7nQVNS_Z9e37R8FYB3hEfevDfvRHiJ" />
+                  <Image
+                    fill
+                    priority
+                    className="object-cover opacity-80"
+                    alt="PlayOnMeet — Gesture-controlled multiplayer games for Google Meet and Zoom video calls"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo6QeQXNMpoiUm-GMk6BFZ_i-5MrfD66rESvKOvL_6xde8vyPxeTCXNBEe8oOlnE2JhRrYZejgA_fuMUGSQK4xgexSbxat-I5hp_LgmGHXfOoTv11kuCgzZwDh43AY2_aETs3et8f3sr9DG6qQfneMdC1MhGi8GyzfGvV93oFcUIpYc4C1kKtSdXJPTQxFB6XCqsG6m1z6xfqLGFOSSaocqmJRX591u1jTTqwsOKGK0Ik4Oz7nQVNS_Z9e37R8FYB3hEfevDfvRHiJ"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent opacity-60"></div>
                 </div>
                 <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/20 blur-[100px] rounded-full"></div>
@@ -244,8 +255,61 @@ export default function LandingPage({
           </div>
         </section>
 
+        {/* The Genesis (Vision) Section */}
+        <section id="genesis" className="py-32 px-8 relative overflow-hidden">
+          {/* Background Ambient Glows */}
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-tertiary/5 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/2"></div>
+
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <ScrollReveal className="order-2 lg:order-1">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-tertiary/50 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                <div className="relative glass-panel rounded-[2.5rem] p-4 border border-white/10 overflow-hidden shadow-2xl">
+                  <img
+                    src="/og-image.png"
+                    alt="The Vision of PlayOnMeet"
+                    className="w-full rounded-[2rem] object-cover grayscale-[0.3] hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
+                  />
+                  {/* Holographic Scanning Line */}
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-[scan_3s_linear_infinite]"></div>
+                </div>
+              </div>
+            </ScrollReveal>
+
+            <ScrollReveal delay={200} className="order-1 lg:order-2">
+              <span className="inline-block px-4 py-1.5 mb-6 rounded-full bg-tertiary/10 border border-tertiary/20 text-tertiary font-bold text-xs tracking-widest uppercase">The Genesis</span>
+              <h2 className="text-5xl lg:text-6xl font-black tracking-tighter mb-8 leading-tight">
+                Born from a <br />
+                <span className="playonmeet-gradient">Shared Curiosity.</span>
+              </h2>
+              <div className="space-y-6 text-xl text-secondary leading-relaxed">
+                <p>
+                  "I created this app because I always wondered during video calls... what if we could make them truly <span className="text-white font-semibold italic">interactive</span>? What if we didn't just screen-share, but played together inside the same digital space?"
+                </p>
+                <p>
+                  The niche was clear: bridging the physical gap with <span className="text-white font-semibold">future tech</span>. I realized that if we could interact through <span className="text-primary font-bold">Air Drawing</span>—using just our hands to paint the void—it would change the way we connect forever.
+                </p>
+                <p className="text-lg opacity-80">
+                  PlayOnMeet is the result of that planning. A platform where technology doesn't get in the way—it becomes the playground.
+                </p>
+              </div>
+
+              {/* <div className="mt-12 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full overflow-hidden border border-primary/30">
+                  <img src="https://api.dicebear.com/9.x/avataaars/svg?seed=Prayag&backgroundColor=transparent" alt="Prayag" />
+                </div>
+                <div>
+                  <div className="font-bold text-white tracking-tight">Prayag N.</div>
+                  <div className="text-sm text-secondary uppercase tracking-widest font-semibold opacity-60">Founder & Visionary</div>
+                </div>
+              </div> */}
+            </ScrollReveal>
+          </div>
+        </section>
+
         {/* Features Bento Grid */}
-        <section className="py-24 px-8 bg-surface-container-lowest">
+        <section className="py-24 px-8 bg-surface-container-lowest" aria-label="App Features">
           <div className="max-w-7xl mx-auto">
             <ScrollReveal delay={100}>
               <div className="mb-20 text-center">
@@ -259,7 +323,7 @@ export default function LandingPage({
                   <div className="flex flex-col md:flex-row gap-10 items-center h-full">
                     {/* Left: Text */}
                     <div className="flex-1 flex flex-col justify-center">
-                      <span className="material-symbols-outlined text-3xl text-primary mb-5" style={{ fontVariationSettings: "'FILL' 0,'wght' 300" }}>videocam</span>
+                      <span className="material-symbols-outlined text-3xl text-primary mb-5" style={{ fontVariationSettings: "'FILL' 0,'wght' 300" }} aria-hidden="true">videocam</span>
                       <h3 className="text-3xl font-bold mb-4">Social XOX</h3>
                       <p className="text-secondary leading-relaxed">
                         Classic Tic-Tac-Toe, elevated for the modern age. Play with friends while keeping the conversation flowing. Our interface places gameplay front and center without ever obscuring your connections.
@@ -271,11 +335,12 @@ export default function LandingPage({
                       <div className="flex items-center justify-center gap-3 w-full">
                         {/* Player 1 */}
                         <div className="relative">
-                          <div className="w-[150px] h-[150px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
-                            <img
+                          <div className="w-[150px] h-[150px] relative rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                            <Image
+                              fill
                               src="https://randomuser.me/api/portraits/men/32.jpg"
-                              alt="Player 1"
-                              className="w-full h-full object-cover"
+                              alt="Player 1 Avatar"
+                              className="object-cover"
                             />
                           </div>
                           <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-primary/40 flex items-center justify-center text-primary font-black text-xs shadow-md">X</div>
@@ -284,11 +349,12 @@ export default function LandingPage({
                         <div className="px-2.5 py-1 rounded-full bg-surface-container-highest border border-outline-variant/20 text-on-surface-variant text-xs font-bold tracking-widest">vs</div>
                         {/* Player 2 */}
                         <div className="relative">
-                          <div className="w-[150px] h-[150px] rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
-                            <img
+                          <div className="w-[150px] h-[150px] relative rounded-xl overflow-hidden border border-outline-variant/20 shadow-lg">
+                            <Image
+                              fill
                               src="https://randomuser.me/api/portraits/women/44.jpg"
-                              alt="Player 2"
-                              className="w-full h-full object-cover"
+                              alt="Player 2 Avatar"
+                              className="object-cover"
                             />
                           </div>
                           <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-tertiary/40 flex items-center justify-center text-tertiary font-black text-xs shadow-md">O</div>
@@ -330,13 +396,18 @@ export default function LandingPage({
               </ScrollReveal>
               <ScrollReveal delay={300} className="h-full">
                 <motion.div whileHover={{ scale: 1.02 }} className="h-full group relative overflow-hidden rounded-[2rem] bg-surface-container p-12 transition-colors duration-500 hover:bg-surface-container-high border border-outline-variant/10">
-                  <span className="material-symbols-outlined text-4xl text-tertiary mb-6">draw</span>
+                  <span className="material-symbols-outlined text-4xl text-tertiary mb-6" aria-hidden="true">draw</span>
                   <h3 className="text-3xl font-bold mb-4">Air Drawing</h3>
                   <p className="text-secondary mb-8 leading-relaxed">
                     Magical AI-powered drawing in mid-air. Use your camera to paint digital strokes across the room.
                   </p>
                   <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden">
-                    <img className="w-full h-full object-cover" alt="air drawing close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqWyqtHHy8EmTjp8313cYVI1vbHAxH0DSs4cbdPYtfjxrbHokJRF56c1V0lJR6Igq7xEE8D5aSWao3f_pE0XHKz06lgjgqFPjNXHnTXNGBu2vlQwdt_eQ3QnQKaFoxkq11XjmxSRe8li_Ek5b8k1Mx-bmFwPv2dGNHHAxHGwsywNbLAH3MA77z03WJlrcd_EV6h_wv8GdjNFhwe4cjavJWSZOLt9ffrdFktqtxtKShnnojGxq7r84CIeLeEBAgsjc7qAAAHszuEr74" />
+                    <Image
+                      fill
+                      className="object-cover"
+                      alt="Player drawing in mid-air using hand gestures on PlayOnMeet"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqWyqtHHy8EmTjp8313cYVI1vbHAxH0DSs4cbdPYtfjxrbHokJRF56c1V0lJR6Igq7xEE8D5aSWao3f_pE0XHKz06lgjgqFPjNXHnTXNGBu2vlQwdt_eQ3QnQKaFoxkq11XjmxSRe8li_Ek5b8k1Mx-bmFwPv2dGNHHAxHGwsywNbLAH3MA77z03WJlrcd_EV6h_wv8GdjNFhwe4cjavJWSZOLt9ffrdFktqtxtKShnnojGxq7r84CIeLeEBAgsjc7qAAAHszuEr74"
+                    />
                   </div>
                 </motion.div>
               </ScrollReveal>
@@ -344,8 +415,75 @@ export default function LandingPage({
           </div>
         </section>
 
+        {/* The Playbook (How to Play) Section */}
+        <section id="how-to-play" className="py-32 px-8 bg-surface-container-lowest/50 relative">
+          <div className="max-w-7xl mx-auto">
+            <ScrollReveal className="text-center mb-24">
+              <h2 className="text-5xl font-black tracking-tighter mb-6">The Playbook</h2>
+              <p className="text-xl text-secondary max-w-2xl mx-auto">Seamless interaction in three simple steps. Powered by real-time AI spatial tracking.</p>
+            </ScrollReveal>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+              {/* Connector Line (Desktop) */}
+              <div className="hidden md:block absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-outline-variant/30 to-transparent -translate-y-1/2 z-0"></div>
+
+              {[
+                {
+                  step: "01",
+                  title: "Ignite",
+                  desc: "Start a session instantly. No accounts, no downloads. Just click 'Start Session' and enter the arena.",
+                  icon: "bolt",
+                  color: "primary"
+                },
+                {
+                  step: "02",
+                  title: "Sync",
+                  desc: "Share your room code or portal link. Your friends join directly in their browser for instant multiplayer sync.",
+                  icon: "share",
+                  color: "tertiary"
+                },
+                {
+                  step: "03",
+                  title: "Interact",
+                  desc: "Use your hands. Pinch to draw digital ink, Open Hand to erase. Reality is your canvas.",
+                  icon: "back_hand",
+                  color: "white"
+                }
+              ].map((item, i) => (
+                <ScrollReveal key={i} delay={i * 200} className="relative z-10">
+                  <div className="glass-panel p-10 rounded-[2.5rem] border border-white/5 group hover:border-primary/20 transition-all duration-500 h-full">
+                    <div className={`w-16 h-16 rounded-2xl bg-surface-container-highest flex items-center justify-center mb-8 border border-outline-variant/20 group-hover:scale-110 transition-transform duration-500 shadow-lg`}>
+                      <span className={`material-symbols-outlined text-3xl text-${item.color === 'white' ? 'white' : item.color}`}>{item.icon}</span>
+                    </div>
+                    <div className="text-xs font-black tracking-[0.3em] text-primary/40 mb-2">{item.step}</div>
+                    <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+                    <p className="text-secondary leading-relaxed">{item.desc}</p>
+                  </div>
+                </ScrollReveal>
+              ))}
+            </div>
+
+            {/* Future Tech Highlight */}
+            {/* <ScrollReveal delay={500} className="mt-24 p-8 glass-panel rounded-[2rem] border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="flex-1">
+                <h4 className="text-xl font-bold mb-2 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">psychology</span>
+                  The Tech Behind the Magic
+                </h4>
+                <p className="text-secondary text-sm leading-relaxed">
+                  PlayOnMeet leverages <strong>MediaPipe AI</strong> for low-latency hand tracking and <strong>PeerJS</strong> for secure, real-time spatial synchronization—bringing "future tech" to your daily video calls.
+                </p>
+              </div>
+              <div className="flex gap-4">
+                <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-primary/70">AI Hand Tracking</div>
+                <div className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-widest text-tertiary/70">P2P Real-time</div>
+              </div>
+            </ScrollReveal> */}
+          </div>
+        </section>
+
         {/* Gaming Arena Section */}
-        <section id="games" className="py-32 px-8">
+        <section id="games" className="py-32 px-8" aria-label="Game Library">
           <div className="max-w-7xl mx-auto">
             <ScrollReveal delay={100}>
               <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
@@ -358,22 +496,28 @@ export default function LandingPage({
                 </button>
               </div>
             </ScrollReveal>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
               <ScrollReveal delay={150}>
                 <motion.div whileHover={{ scale: 1.02 }} className="relative group h-[450px] rounded-[2.5rem] overflow-hidden bg-surface-container border border-outline-variant/10 shadow-lg transition-colors duration-500">
-                  <img className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="xox board" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwwGlcBTu8pkdcotoIV8974QAcMJBb3n1P7-iIwfEH4G5ZAabFkOwyml51FyUUd9-P-lrgQvXMUmWuFP3MKH-kqOJScWAvpQsLBpaqAcT1jkg20NA8hyUZXQBYrX9szRKdf4xeVKNIYGsSRzYmLSlegWqSEXvEAu9u5OAs4C465Oaw7mtqUsn3W0_Zjf_A3tT36dALFfHqkj15XPO3fSinKtvrRQTObzkW5UgPkVQF1XHSPQUmrJw0HCEljwK7iVhnHCy2oppfXE_F" />
+                  <Image
+                    fill
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt="Play Social XOX — Online multiplayer Tic-Tac-Toe for video calls"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwwGlcBTu8pkdcotoIV8974QAcMJBb3n1P7-iIwfEH4G5ZAabFkOwyml51FyUUd9-P-lrgQvXMUmWuFP3MKH-kqOJScWAvpQsLBpaqAcT1jkg20NA8hyUZXQBYrX9szRKdf4xeVKNIYGsSRzYmLSlegWqSEXvEAu9u5OAs4C465Oaw7mtqUsn3W0_Zjf_A3tT36dALFfHqkj15XPO3fSinKtvrRQTObzkW5UgPkVQF1XHSPQUmrJw0HCEljwK7iVhnHCy2oppfXE_F"
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-10 w-full">
                     <h4 className="text-3xl font-bold mb-2">Social XOX</h4>
                     <p className="text-on-surface-variant mb-6">The ultimate icebreaker.</p>
-                    <button onClick={openCreateModal} className="w-full py-4 rounded-full bg-primary text-on-primary font-bold transition-all duration-300 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0">Play Now</button>
+                    <button onClick={openCreateModal} className="w-full py-4 rounded-full bg-primary text-on-primary font-bold transition-all duration-300 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0" aria-label="Play Social XOX now">Play Now</button>
                   </div>
                 </motion.div>
               </ScrollReveal>
               <ScrollReveal delay={300}>
                 <motion.div whileHover={{ scale: 1.02 }} className="relative group h-[450px] rounded-[2.5rem] overflow-hidden bg-surface-container-low border border-dashed border-outline-variant/40 flex flex-col items-center justify-center text-center p-10 grayscale hover:grayscale-0 transition-colors duration-500">
                   <div className="w-20 h-20 rounded-full bg-surface-container-highest flex items-center justify-center mb-8 border border-outline-variant/20">
-                    <span className="material-symbols-outlined text-4xl text-outline-variant">casino</span>
+                    <span className="material-symbols-outlined text-4xl text-outline-variant" aria-hidden="true">casino</span>
                   </div>
                   <h4 className="text-3xl font-bold mb-4">Ludo Master</h4>
                   <div className="px-6 py-2 rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary font-bold text-sm uppercase tracking-widest">Arriving Soon</div>
@@ -384,7 +528,7 @@ export default function LandingPage({
               </ScrollReveal>
               <ScrollReveal delay={450}>
                 <motion.div whileHover={{ scale: 1.02 }} className="relative group h-[450px] rounded-[2.5rem] overflow-hidden bg-surface-container-lowest border border-outline-variant/10 p-10 flex flex-col justify-end">
-                  <div className="absolute top-10 left-10 text-outline-variant font-black text-6xl opacity-10 uppercase tracking-tighter">Next Gen</div>
+                  <div className="absolute top-10 left-10 text-outline-variant font-black text-6xl opacity-10 uppercase tracking-tighter" aria-hidden="true">Next Gen</div>
                   <div className="space-y-4">
                     <div className="h-1 w-12 bg-outline-variant/30 rounded-full"></div>
                     <h4 className="text-2xl font-bold text-secondary">Expanding the Suite</h4>
@@ -392,6 +536,35 @@ export default function LandingPage({
                   </div>
                 </motion.div>
               </ScrollReveal>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ Section — Triggers Rich Snippets in Search Results */}
+        <section className="py-32 px-8" aria-label="Frequently Asked Questions">
+          <div className="max-w-4xl mx-auto">
+            <ScrollReveal delay={100}>
+              <h2 className="text-4xl font-black tracking-tight mb-16 text-center">Frequently Asked Questions</h2>
+            </ScrollReveal>
+            <div className="space-y-6">
+              {[
+                { q: "How do I play games on Google Meet or Zoom?", a: "PlayOnMeet is built specifically for video call environments. Simply open the app, create a room, and share your screen. Your friends can join via a simple room code, and you can all play using hand gestures without ever leaving the call window." },
+                { q: "Do I need to install any software or extensions?", a: "No. PlayOnMeet runs entirely in your browser using advanced AI hand-tracking. This means no downloads, no security risks, and instant accessibility for everyone on your team." },
+                { q: "Is PlayOnMeet really free for teams?", a: "Yes. Our core gaming suite, including Social XOX and Air Drawing, is completely free to use. We believe social connection on video calls should be accessible to every remote and hybrid team." },
+                { q: "Which browsers are supported?", a: "We recommend Google Chrome or Microsoft Edge for the most stable AI processing, but PlayOnMeet works on all modern desktop browsers that support webcam access." },
+              ].map((item, i) => (
+                <ScrollReveal key={i} delay={150 + i * 50}>
+                  <details className="group glass-panel rounded-3xl border border-outline-variant/10 overflow-hidden" aria-labelledby={`faq-q-${i}`}>
+                    <summary id={`faq-q-${i}`} className="flex justify-between items-center p-8 cursor-pointer list-none hover:bg-white/[0.02] transition-colors">
+                      <span className="text-lg font-bold pr-6">{item.q}</span>
+                      <span className="material-symbols-outlined transition-transform duration-300 group-open:rotate-180" aria-hidden="true">expand_more</span>
+                    </summary>
+                    <div className="px-8 pb-8 text-secondary leading-relaxed animate-in fade-in slide-in-from-top-2">
+                      {item.a}
+                    </div>
+                  </details>
+                </ScrollReveal>
+              ))}
             </div>
           </div>
         </section>
@@ -405,7 +578,7 @@ export default function LandingPage({
               <h2 className="text-5xl font-extrabold mb-8 playonmeet-gradient leading-tight">Ready to transcend<br />ordinary gaming?</h2>
               <p className="text-xl text-secondary mb-12 max-w-2xl mx-auto">Start a session in seconds. No hurdles, no fluff. Just pure, elegant interaction.</p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-12 py-5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-black text-xl shadow-2xl shadow-primary/30 transition-opacity duration-300">
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-12 py-5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-black text-xl shadow-2xl shadow-primary/30 transition-opacity duration-300" aria-label="Start your gaming session now">
                   Start Session
                 </motion.button>
                 <div className="text-outline-variant text-sm font-medium">No account required to join</div>
@@ -416,7 +589,7 @@ export default function LandingPage({
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#0b1326] w-full py-12 px-8 tonal-shift-high">
+      <footer className="bg-[#0b1326] w-full py-12 px-8 tonal-shift-high" role="contentinfo">
         <div className="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto gap-8 font-['Plus_Jakarta_Sans'] text-sm">
           <div className="flex flex-col gap-3 text-center md:text-left">
             <BrandLogo className="text-xl" />
@@ -430,10 +603,10 @@ export default function LandingPage({
             </div>
           </div>
           <div className="flex gap-8 items-center">
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#">Community</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#">Twitter</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#">Discord</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#">Support</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#" aria-label="Join our community">Community</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#" aria-label="Join us on Twitter">Twitter</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#" aria-label="Join our Discord">Discord</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="#" aria-label="Contact support">Support</a>
           </div>
         </div>
       </footer>
@@ -446,6 +619,9 @@ export default function LandingPage({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-label={modalMode === 'join' ? 'Join a Match' : 'Create a Session'}
           >
             <motion.div
               initial={{ scale: 0.95, y: 20, opacity: 0 }}
@@ -460,8 +636,9 @@ export default function LandingPage({
 
               <div className="space-y-4 mb-8">
                 <div>
-                  <label className="block text-secondary text-sm font-bold mb-2">NICKNAME</label>
+                  <label htmlFor="nickname" className="block text-secondary text-sm font-bold mb-2">NICKNAME</label>
                   <input
+                    id="nickname"
                     type="text"
                     autoFocus
                     placeholder="Enter your nickname"
@@ -470,29 +647,34 @@ export default function LandingPage({
                     className="w-full px-5 py-3 rounded-xl bg-surface-container-highest border border-outline-variant/30 text-on-surface font-semibold focus:outline-none focus:border-primary transition-colors mb-6"
                     spellCheck="false"
                     maxLength={15}
+                    aria-required="true"
                   />
                   <div className="flex justify-between items-center mb-4">
                     <label className="text-secondary text-sm font-bold uppercase tracking-widest">Choose Your Avatar</label>
-                    <button onClick={randomizeAvatars} className="flex items-center gap-1 text-primary hover:text-primary-container transition-colors text-xs font-bold uppercase tracking-widest">
-                      <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>refresh</span>
+                    <button onClick={randomizeAvatars} className="flex items-center gap-1 text-primary hover:text-primary-container transition-colors text-xs font-bold uppercase tracking-widest" aria-label="Get new avatar options">
+                      <span className="material-symbols-outlined text-[16px]" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }} aria-hidden="true">refresh</span>
                       Shuffle
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Select avatar">
                     {avatarOptions.map((avatarName) => (
                       <div
                         key={avatarName}
+                        role="radio"
+                        aria-checked={localAvatar === avatarName}
                         onClick={() => setLocalAvatar(avatarName)}
                         className={`cursor-pointer rounded-2xl border-2 p-2 flex items-center justify-center transition-all ${localAvatar === avatarName
                           ? 'border-primary bg-primary/20 shadow-[0_0_20px_rgba(192,193,255,0.4)] scale-105'
                           : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
                           }`}
                       >
-                        <img
-                          src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`}
-                          alt="Avatar Option"
-                          className="w-16 h-16 drop-shadow-md"
-                        />
+                        <div className="relative w-16 h-16 drop-shadow-md">
+                          <Image
+                            fill
+                            src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`}
+                            alt={`Avatar Option ${avatarName}`}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -500,8 +682,9 @@ export default function LandingPage({
 
                 {modalMode === 'join' && (
                   <div>
-                    <label className="block text-secondary text-sm font-bold mb-2">ROOM CODE</label>
+                    <label htmlFor="room-code" className="block text-secondary text-sm font-bold mb-2">ROOM CODE</label>
                     <input
+                      id="room-code"
                       type="text"
                       placeholder="Enter Room Code"
                       value={inputRoomCode}
@@ -509,17 +692,19 @@ export default function LandingPage({
                       className="w-full px-5 py-3 rounded-xl bg-surface-container-highest border border-outline-variant/30 text-on-surface font-semibold focus:outline-none focus:border-primary transition-colors uppercase tracking-widest"
                       spellCheck="false"
                       maxLength={5}
+                      aria-required="true"
                     />
                   </div>
                 )}
               </div>
 
               <div className="flex gap-4">
-                <button onClick={() => setShowInputModal(false)} className="flex-1 py-3 rounded-full border border-outline-variant/30 text-secondary hover:bg-surface-container transition-all">Cancel</button>
+                <button onClick={() => setShowInputModal(false)} className="flex-1 py-3 rounded-full border border-outline-variant/30 text-secondary hover:bg-surface-container transition-all" aria-label="Cancel and close modal">Cancel</button>
                 <button
                   onClick={submitModal}
                   disabled={!localName.trim() || (modalMode === 'join' && inputRoomCode.trim().length !== 5)}
                   className="flex-1 py-3 rounded-full bg-primary text-on-primary font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  aria-label={modalMode === 'join' ? 'Join the match now' : 'Start your session now'}
                 >
                   {modalMode === 'join' ? 'Join Now' : 'Start Session'}
                 </button>

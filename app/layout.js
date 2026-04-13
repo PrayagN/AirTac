@@ -119,6 +119,35 @@ const jsonLd = {
         "@type": "Organization",
         "name": "PlayOnMeet"
       }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I play games on Google Meet or Zoom?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Simply visit PlayOnMeet.com during your call. Share your screen or invite your friends via room code. No installation or account required."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a controller for PlayOnMeet?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No controller needed! PlayOnMeet uses Bare-Hand Tracking technology. Just gesture in front of your webcam to draw and make moves."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is PlayOnMeet free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes! PlayOnMeet is free to use for teams and individuals looking for icebreakers and social games on video calls."
+          }
+        }
+      ]
     }
   ]
 };
@@ -128,6 +157,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#0a0a0b',
 };
 
 export default function RootLayout({ children }) {
