@@ -7,7 +7,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import styles from './AirCanvas.module.css';
-import LandingPage from './LandingPage';
+// LandingPage removed — now handled by page.js with dynamic import
 import CalibratingReality from './CalibratingReality';
 import { sfx } from '../utils/SoundEngine';
 import {
@@ -20,12 +20,10 @@ import {
   Link, Share2
 } from 'lucide-react';
 
-export default function AirCanvas() {
+export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', initialRoomCode = '' }) {
   const videoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const canvasRef = useRef(null);
-
-  const [hasStarted, setHasStarted] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [isInCall, setIsInCall] = useState(false);
@@ -71,18 +69,18 @@ export default function AirCanvas() {
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [floatingEmojis, setFloatingEmojis] = useState([]);
 
-  // Invite & Player Info States
-  const [localName, setLocalName] = useState('');
-  const [localAvatar, setLocalAvatar] = useState('Felix');
+  // Invite & Player Info States — seeded from props
+  const [localName, setLocalName] = useState(initialName);
+  const [localAvatar, setLocalAvatar] = useState(initialAvatar || 'Felix');
   const [remoteName, setRemoteName] = useState('');
   const [remoteAvatar, setRemoteAvatar] = useState('');
   const [joinRoomId, setJoinRoomId] = useState(null);
-  const [inputRoomCode, setInputRoomCode] = useState('');
+  const [inputRoomCode, setInputRoomCode] = useState(initialRoomCode);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showInfoMenu, setShowInfoMenu] = useState(false);
 
-  const localNameRef = useRef('');
-  const localAvatarRef = useRef('');
+  const localNameRef = useRef(initialName);
+  const localAvatarRef = useRef(initialAvatar || 'Felix');
   useEffect(() => { localNameRef.current = localName; }, [localName]);
   useEffect(() => { localAvatarRef.current = localAvatar; }, [localAvatar]);
 
@@ -93,19 +91,30 @@ export default function AirCanvas() {
       videoRef.current.srcObject = localStreamRef.current;
       videoRef.current.muted = true;
     }
-  }, [isInCall, hasStarted]);
+  }, [isInCall]);
 
+  // Auto-start game engine on mount (LandingPage already handled setup)
   useEffect(() => {
+    // Resolve room code: prefer prop, then URL param
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const room = urlParams.get('room');
-      if (room) {
-        setJoinRoomId(room);
-        joinRoomIdRef.current = room;
-        setRemotePeerId(room);
-        setInputRoomCode(room);
+      const roomFromUrl = urlParams.get('room');
+      const resolvedRoom = initialRoomCode || roomFromUrl || null;
+      if (resolvedRoom) {
+        const code = resolvedRoom.toUpperCase();
+        setJoinRoomId(code);
+        joinRoomIdRef.current = code;
+        setRemotePeerId(code);
+        setInputRoomCode(code);
       }
     }
+    // Kick off the AI canvas & peer connection immediately
+    sfx?.init();
+    sfx?.playNotify();
+    if (window.__START_AIR_CANVAS__) {
+      window.__START_AIR_CANVAS__();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -955,20 +964,7 @@ export default function AirCanvas() {
     showToast('✅ Invite link copied to clipboard!');
   };
 
-  const handleNativeStart = () => {
-    if (inputRoomCode.trim()) {
-      const code = inputRoomCode.trim().toUpperCase();
-      setJoinRoomId(code);
-      joinRoomIdRef.current = code;
-      setRemotePeerId(code);
-    }
-    setHasStarted(true);
-    sfx?.init();
-    sfx?.playNotify();
-    if (window.__START_AIR_CANVAS__) {
-      window.__START_AIR_CANVAS__();
-    }
-  };
+  // handleNativeStart removed — AirCanvas now auto-starts on mount
 
   // --- Aesthetic Victory & Animation Handlers ---
   const [lineCoords, setLineCoords] = useState(null);
@@ -1042,21 +1038,8 @@ export default function AirCanvas() {
   }, [winner, myRole]);
 
   return (
-    <div className={hasStarted ? styles.container : ""}>
-      {!hasStarted && (
-        <LandingPage
-          localName={localName}
-          setLocalName={setLocalName}
-          localAvatar={localAvatar}
-          setLocalAvatar={setLocalAvatar}
-          inputRoomCode={inputRoomCode}
-          setInputRoomCode={setInputRoomCode}
-          handleNativeStart={handleNativeStart}
-        />
-      )}
-
-
-      {hasStarted && !isLoaded && !loadError && <CalibratingReality />}
+    <div className={styles.container}>
+      {!isLoaded && !loadError && <CalibratingReality />}
       {loadError && <div className={styles.loader} style={{ color: '#ff4444', animation: 'none', textAlign: 'center', padding: '0 20px', textShadow: '0 0 10px #ff0000' }}>{loadError}</div>}
 
       {isLoaded && (

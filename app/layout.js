@@ -1,14 +1,23 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 const BASE_URL = "https://www.playonmeet.com";
@@ -68,10 +77,12 @@ export const metadata = {
       "Compatible with Google Meet, Zoom, and Microsoft Teams.",
     images: [
       {
-        url: "/og-image.png",
+        url: `${BASE_URL}/og-image.png`,
+        secureUrl: `${BASE_URL}/og-image.png`,
         width: 1200,
         height: 630,
-        alt: "PlayOnMeet — The Ultimate Video Call Game Platform",
+        type: "image/png",
+        alt: "PlayOnMeet — Gesture-Controlled Games for Video Calls",
       },
     ],
   },
@@ -79,9 +90,9 @@ export const metadata = {
   // ── Twitter Card ──────────────────────────────────────────────
   twitter: {
     card: "summary_large_image",
-    title: "PlayOnMeet — Real-time WebCam Games",
-    description: "Multiplayer SOS game with hand gestures. Works on Google Meet/Zoom. No download.",
-    images: ["/og-image.png"],
+    title: "PlayOnMeet — Gesture-Controlled Games for Video Calls",
+    description: "Transform your video calls into a game room. Play with your hands—no download required.",
+    images: [`${BASE_URL}/og-image.png`],
     creator: "@playonmeet",
   },
 
@@ -162,10 +173,24 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark scroll-smooth`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${plusJakartaSans.variable} dark scroll-smooth`}>
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Load Material Symbols asynchronously — prevents render-blocking */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+          media="print"
+          // @ts-ignore — onLoad on link is valid HTML, not a React quirk
+          onLoad="this.media='all'"
+        />
+        <noscript>
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+          />
+        </noscript>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

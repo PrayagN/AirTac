@@ -2,7 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
-import FeedbackChatbot from './FeedbackChatbot';
+import dynamic from 'next/dynamic';
+
+const FeedbackChatbot = dynamic(() => import('./FeedbackChatbot'), {
+  ssr: false,
+});
 
 function BrandLogo({ className = "" }) {
   return (
@@ -242,6 +246,7 @@ export default function LandingPage({
                   <Image
                     fill
                     priority
+                    sizes="(max-width: 1024px) 100vw, 42vw"
                     className="object-cover opacity-80"
                     alt="PlayOnMeet — Gesture-controlled multiplayer games for Google Meet and Zoom video calls"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDo6QeQXNMpoiUm-GMk6BFZ_i-5MrfD66rESvKOvL_6xde8vyPxeTCXNBEe8oOlnE2JhRrYZejgA_fuMUGSQK4xgexSbxat-I5hp_LgmGHXfOoTv11kuCgzZwDh43AY2_aETs3et8f3sr9DG6qQfneMdC1MhGi8GyzfGvV93oFcUIpYc4C1kKtSdXJPTQxFB6XCqsG6m1z6xfqLGFOSSaocqmJRX591u1jTTqwsOKGK0Ik4Oz7nQVNS_Z9e37R8FYB3hEfevDfvRHiJ"
@@ -265,14 +270,16 @@ export default function LandingPage({
             <ScrollReveal className="order-2 lg:order-1">
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-tertiary/50 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                <div className="relative glass-panel rounded-[2.5rem] p-4 border border-white/10 overflow-hidden shadow-2xl">
-                  <img
+                <div className="relative glass-panel rounded-[2.5rem] p-4 border border-white/10 overflow-hidden shadow-2xl aspect-video">
+                  <Image
+                    fill
                     src="/og-image.png"
                     alt="The Vision of PlayOnMeet"
-                    className="w-full rounded-[2rem] object-cover grayscale-[0.3] hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100"
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="rounded-[2rem] object-cover grayscale-[0.3] hover:grayscale-0 transition-all duration-700 scale-105 group-hover:scale-100 p-4"
                   />
                   {/* Holographic Scanning Line */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-[scan_3s_linear_infinite]"></div>
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-[scan_3s_linear_infinite] z-10"></div>
                 </div>
               </div>
             </ScrollReveal>
@@ -341,6 +348,7 @@ export default function LandingPage({
                               src="https://randomuser.me/api/portraits/men/32.jpg"
                               alt="Player 1 Avatar"
                               className="object-cover"
+                              sizes="150px"
                             />
                           </div>
                           <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-primary/40 flex items-center justify-center text-primary font-black text-xs shadow-md">X</div>
@@ -355,6 +363,7 @@ export default function LandingPage({
                               src="https://randomuser.me/api/portraits/women/44.jpg"
                               alt="Player 2 Avatar"
                               className="object-cover"
+                              sizes="150px"
                             />
                           </div>
                           <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-[#1e1f26] border border-tertiary/40 flex items-center justify-center text-tertiary font-black text-xs shadow-md">O</div>
@@ -407,6 +416,7 @@ export default function LandingPage({
                       className="object-cover"
                       alt="Player drawing in mid-air using hand gestures on PlayOnMeet"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqWyqtHHy8EmTjp8313cYVI1vbHAxH0DSs4cbdPYtfjxrbHokJRF56c1V0lJR6Igq7xEE8D5aSWao3f_pE0XHKz06lgjgqFPjNXHnTXNGBu2vlQwdt_eQ3QnQKaFoxkq11XjmxSRe8li_Ek5b8k1Mx-bmFwPv2dGNHHAxHGwsywNbLAH3MA77z03WJlrcd_EV6h_wv8GdjNFhwe4cjavJWSZOLt9ffrdFktqtxtKShnnojGxq7r84CIeLeEBAgsjc7qAAAHszuEr74"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   </div>
                 </motion.div>
@@ -505,6 +515,7 @@ export default function LandingPage({
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     alt="Play Social XOX — Online multiplayer Tic-Tac-Toe for video calls"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwwGlcBTu8pkdcotoIV8974QAcMJBb3n1P7-iIwfEH4G5ZAabFkOwyml51FyUUd9-P-lrgQvXMUmWuFP3MKH-kqOJScWAvpQsLBpaqAcT1jkg20NA8hyUZXQBYrX9szRKdf4xeVKNIYGsSRzYmLSlegWqSEXvEAu9u5OAs4C465Oaw7mtqUsn3W0_Zjf_A3tT36dALFfHqkj15XPO3fSinKtvrRQTObzkW5UgPkVQF1XHSPQUmrJw0HCEljwK7iVhnHCy2oppfXE_F"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent"></div>
                   <div className="absolute bottom-0 left-0 p-10 w-full">
@@ -668,11 +679,14 @@ export default function LandingPage({
                           : 'border-outline-variant/30 bg-surface-container-highest hover:border-primary/50 hover:scale-105'
                           }`}
                       >
-                        <div className="relative w-16 h-16 drop-shadow-md">
-                          <Image
-                            fill
+                        <div className="w-16 h-16 drop-shadow-md">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
                             src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${avatarName}&backgroundColor=transparent`}
-                            alt={`Avatar Option ${avatarName}`}
+                            alt={`Avatar: ${avatarName}`}
+                            width={64}
+                            height={64}
+                            style={{ width: '64px', height: '64px' }}
                           />
                         </div>
                       </div>

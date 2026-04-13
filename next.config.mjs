@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Enable gzip/brotli compression on responses
+  compress: true,
+
   images: {
+    // Use modern formats for best compression
+    formats: ['image/avif', 'image/webp'],
+    // Minimum TTL for cached optimized images (1 week)
+    minimumCacheTTL: 604800,
+
     remotePatterns: [
       {
         protocol: 'https',
@@ -16,6 +24,8 @@ const nextConfig = {
       },
     ],
   },
+
+  // Minimize JS bundle in production (default in Next.js 16, no flag needed)
 };
 
 export default nextConfig;
