@@ -1076,6 +1076,25 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
                 <span style={{ color: getPingColor(ping), fontSize: '10px', marginLeft: '10px', fontWeight: 'bold' }}>⚡ {ping}ms</span>
               )}
             </div>
+            {/* Central Status Indicators (Navbar) */}
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-all duration-300 hidden sm:block">
+              {!isInCall ? (
+                <div className="glass-panel px-4 py-1.5 md:px-6 md:py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl">
+                  <div className="relative flex h-3 w-3 hidden md:flex">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                  </div>
+                  <span className="text-xs md:text-sm font-medium text-indigo-100 tracking-wide whitespace-nowrap">Waiting for opponent...</span>
+                </div>
+              ) : showGrid && !winner ? (
+                <div className="glass-panel px-4 py-1.5 md:px-6 md:py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
+                  <span className="text-xs md:text-sm font-bold tracking-widest uppercase whitespace-nowrap" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
+                    {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+
             <div className="flex items-center gap-6">
               <div className={isInCall ? "flex -space-x-3 hover:-space-x-1 transition-all duration-300" : "flex"}>
                 <div className="w-10 h-10 rounded-full border-2 border-slate-900 overflow-hidden relative bg-surface-container-highest flex items-center justify-center z-10 shadow-lg shadow-primary/20">
@@ -1115,22 +1134,20 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
             </div>
           </header>
 
-          {/* Central Status Indicators */}
-          {!isInCall ? (
-            <div className="absolute top-24 left-1/2 -translate-x-1/2 glass-panel px-6 py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl z-50">
-              <div className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
-              </div>
-              <span className="text-sm font-medium text-indigo-100 tracking-wide">Waiting for opponent</span>
+          {/* Mobile-only status indicators (shown below navbar on small screens) */}
+            <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-300 sm:hidden z-50">
+              {!isInCall ? (
+                <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl">
+                  <span className="text-xs font-medium text-indigo-100 tracking-wide whitespace-nowrap">Waiting for opponent...</span>
+                </div>
+              ) : showGrid && !winner ? (
+                <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
+                  <span className="text-xs font-bold tracking-widest uppercase whitespace-nowrap" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
+                    {currentTurn === myRole ? `▶ YOUR TURN` : `WAITING...`}
+                  </span>
+                </div>
+              ) : null}
             </div>
-          ) : showGrid && !winner ? (
-            <div className="absolute top-24 left-1/2 -translate-x-1/2 glass-panel px-6 py-2 rounded-full flex items-center gap-3 border border-white/5 shadow-xl z-50" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
-              <span className="text-sm font-bold tracking-widest uppercase" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
-                {currentTurn === myRole ? `▶ YOUR TURN (${currentTurn})` : `WAITING FOR OPPONENT...`}
-              </span>
-            </div>
-          ) : null}
 
           {/* Share Modal removed from inline overlay, now rendered full screen at the end of the DOM tree */}
         </>
