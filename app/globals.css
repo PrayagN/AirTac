@@ -39,7 +39,15 @@ a {
   background: linear-gradient(135deg, rgba(192, 193, 255, 0.05), rgba(93, 96, 235, 0.05));
 }
 .material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
 }
 .playonmeet-gradient {
   background: linear-gradient(to right, #c0c1ff, #ddb7ff, #ffffff);
