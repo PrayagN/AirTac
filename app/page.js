@@ -55,6 +55,7 @@ export default function Home() {
           initialName={localName}
           initialAvatar={localAvatar}
           initialRoomCode={inputRoomCode}
+          hasStarted={hasStarted}
         />
       </main>
     );

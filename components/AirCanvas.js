@@ -20,7 +20,7 @@ import {
   Link, Share2
 } from 'lucide-react';
 
-export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', initialRoomCode = '' }) {
+export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', initialRoomCode = '', hasStarted = false }) {
   const videoRef = useRef(null);
   const remoteVideoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -114,7 +114,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
     if (window.__START_AIR_CANVAS__) {
       window.__START_AIR_CANVAS__();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -288,6 +288,8 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           setLoadError("BROWSER BLOCKED CAMERA: You are using an insecure HTTP Wi-Fi connection. The browser prevents Camera access! Please enable 'Insecure origins' in chrome://flags as discussed, or use an HTTPS Tunnel.");
         } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setLoadError("PERMISSION DENIED: Browser blocked access. Please manually grant tracking permissions securely via the Address Bar!");
+        } else if (err.name === 'NotFoundError' || err.message.includes('device not found')) {
+          setLoadError("NO CAMERA DETECTED: We couldn't find a webcam on your device. PlayOnMeet requires a camera for hand tracking.");
         } else {
           setLoadError("SYSTEM ERROR: Failed to load AI arrays or assign web elements. " + err.message);
         }
@@ -503,8 +505,8 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
                 const screenY = pY * scale + offsetY;
 
                 // Add 15px margin for easier drawing near edges
-                if (screenX >= rect.left - 15 && screenX <= rect.right + 15 && 
-                    screenY >= rect.top - 15 && screenY <= rect.bottom + 15) {
+                if (screenX >= rect.left - 15 && screenX <= rect.right + 15 &&
+                  screenY >= rect.top - 15 && screenY <= rect.bottom + 15) {
                   canDraw = true;
                 }
               }
@@ -1040,7 +1042,25 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
   return (
     <div className={styles.container}>
       {!isLoaded && !loadError && <CalibratingReality />}
-      {loadError && <div className={styles.loader} style={{ color: '#ff4444', animation: 'none', textAlign: 'center', padding: '0 20px', textShadow: '0 0 10px #ff0000' }}>{loadError}</div>}
+      {loadError && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-6">
+          <div className="glass-panel p-10 rounded-[2rem] border border-red-500/30 max-w-lg w-full text-center shadow-[0_30px_60px_rgba(255,0,0,0.15)] flex flex-col items-center animate-in fade-in zoom-in duration-500">
+            <div className="w-24 h-24 rounded-full bg-red-500/10 flex items-center justify-center mb-6 border border-red-500/20">
+              <span className="material-symbols-outlined text-5xl text-red-400 drop-shadow-[0_0_15px_rgba(255,0,0,0.6)]">videocam_off</span>
+            </div>
+            <h2 className="text-2xl font-black text-white mb-4 tracking-tight uppercase">Connection Error</h2>
+            <p className="text-red-200/90 text-sm leading-relaxed mb-8 font-medium">
+              {loadError}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-8 py-3.5 rounded-full bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-500/30 hover:from-red-500/30 hover:to-pink-500/30 transition-all font-bold text-white uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(255,0,0,0.2)] hover:shadow-[0_0_30px_rgba(255,0,0,0.4)] hover:scale-105 active:scale-95"
+            >
+              Reload Arena
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoaded && (
         <>
@@ -1075,7 +1095,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
                   <span className="material-symbols-outlined text-[24px]">info</span>
                 </button>
                 {showInfoMenu && (
-                  <div className="absolute right-0 top-[120%] w-[320px] bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden z-[100] flex flex-col p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                  <div className="absolute right-0 top-[120%] w-[320px] bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden z-[9999] flex flex-col p-5 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0ff]/10 to-transparent pointer-events-none -z-10" />
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-sm font-bold uppercase tracking-widest text-[#0ff] drop-shadow-[0_0_8px_rgba(0,255,255,0.4)] m-0">How To Play</h3>
