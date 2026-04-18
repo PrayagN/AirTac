@@ -93,29 +93,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
     }
   }, [isInCall]);
 
-  // Auto-start game engine on mount (LandingPage already handled setup)
-  useEffect(() => {
-    // Resolve room code: prefer prop, then URL param
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const roomFromUrl = urlParams.get('room');
-      const resolvedRoom = initialRoomCode || roomFromUrl || null;
-      if (resolvedRoom) {
-        const code = resolvedRoom.toUpperCase();
-        setJoinRoomId(code);
-        joinRoomIdRef.current = code;
-        setRemotePeerId(code);
-        setInputRoomCode(code);
-      }
-    }
-    // Kick off the AI canvas & peer connection immediately
-    sfx?.init();
-    sfx?.playNotify();
-    if (window.__START_AIR_CANVAS__) {
-      window.__START_AIR_CANVAS__();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Removed the global window variable approach. The startup logic has been merged into the main useEffect below.
 
   useEffect(() => {
     let interval;
@@ -225,7 +203,25 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
     let cursorAngle = 0;
     let eraserPulse = 0;
 
-    window.__START_AIR_CANVAS__ = async () => {
+    // Resolve room code: prefer prop, then URL param
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const roomFromUrl = urlParams.get('room');
+      const resolvedRoom = initialRoomCode || roomFromUrl || null;
+      if (resolvedRoom) {
+        const code = resolvedRoom.toUpperCase();
+        setJoinRoomId(code);
+        joinRoomIdRef.current = code;
+        setRemotePeerId(code);
+        setInputRoomCode(code);
+      }
+    }
+
+    // Kick off the AI canvas & peer connection immediately
+    sfx?.init();
+    sfx?.playNotify();
+
+    const startAirCanvas = async () => {
       try {
         // 0. Explicit check for HTTP insecure context wipeout
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -278,6 +274,9 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.muted = true;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play().catch(e => console.error("Play error:", e));
+          };
           videoRef.current.addEventListener("loadeddata", predictWebcam);
           setIsLoaded(true);
           initializePeer(stream);
@@ -672,6 +671,8 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
 
       animationFrameId = requestAnimationFrame(predictWebcam);
     };
+
+    startAirCanvas();
 
     const drawLines = (ctx, linesArray, isRemote) => {
       linesArray.forEach(line => {
