@@ -11,6 +11,7 @@
   "dependencies": {
     "@mediapipe/tasks-vision": "^0.10.34",
     "canvas-confetti": "^1.9.4",
+    "driver.js": "^1.4.0",
     "framer-motion": "^12.38.0",
     "googleapis": "^171.4.0",
     "lucide-react": "^1.8.0",

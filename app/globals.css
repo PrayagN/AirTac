@@ -145,3 +145,63 @@ a {
   scrollbar-width: thin;
   scrollbar-color: #c0c1ff #050505;
 }
+
+/* Driver.js Glassmorphism Popover */
+.glass-tour-popover {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+}
+
+.glass-tour-popover .driver-popover-title {
+  color: var(--neon-lime) !important;
+  font-family: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif !important;
+  font-weight: bold !important;
+  font-size: 1.1rem !important;
+}
+
+.glass-tour-popover .driver-popover-description {
+  color: #cbd5e1 !important;
+  font-family: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.9rem !important;
+  line-height: 1.4 !important;
+}
+
+.glass-tour-popover .driver-popover-footer button {
+  background: rgba(192, 193, 255, 0.1) !important;
+  border: 1px solid rgba(192, 193, 255, 0.2) !important;
+  color: #c0c1ff !important;
+  border-radius: 8px !important;
+  padding: 6px 12px !important;
+  font-family: var(--font-plus-jakarta-sans), 'Plus Jakarta Sans', sans-serif !important;
+  text-transform: uppercase !important;
+  font-size: 0.75rem !important;
+  font-weight: bold !important;
+  letter-spacing: 0.05em !important;
+  transition: all 0.2s ease !important;
+  text-shadow: none !important;
+}
+
+.glass-tour-popover .driver-popover-footer button:hover {
+  background: rgba(192, 193, 255, 0.2) !important;
+  border-color: rgba(192, 193, 255, 0.4) !important;
+  color: #fff !important;
+  box-shadow: 0 0 10px rgba(192, 193, 255, 0.2) !important;
+}
+
+.glass-tour-popover .driver-popover-navigation-btns {
+  gap: 8px !important;
+}
+
+/* Hide the pointer arrow and any SVG navigation arrows */
+.glass-tour-popover .driver-popover-arrow {
+  display: none !important;
+}
+
+.glass-tour-popover .driver-popover-footer button svg {
+  display: none !important;
+}

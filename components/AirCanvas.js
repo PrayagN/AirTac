@@ -6,6 +6,8 @@ import Peer from 'peerjs';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
 import styles from './AirCanvas.module.css';
 // LandingPage removed — now handled by page.js with dynamic import
 import CalibratingReality from './CalibratingReality';
@@ -106,6 +108,44 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
     }
     return () => clearInterval(interval);
   }, [isInCall]);
+
+  useEffect(() => {
+    if (isLoaded && typeof window !== 'undefined') {
+      const hasSeenTour = localStorage.getItem('hasSeenTour');
+      if (!hasSeenTour) {
+        setTimeout(() => {
+          const allSteps = [
+            { element: '#btn-timer', popover: { title: 'Speed', description: 'Set turn duration.', side: 'top', align: 'center' } },
+            { element: '#btn-game-mode', popover: { title: 'Mode', description: 'Toggle Game or Free Draw.', side: 'top', align: 'center' } },
+            { element: '#btn-mic', popover: { title: 'Mic', description: 'Mute/Unmute audio.', side: 'top', align: 'center' } },
+            { element: '#btn-cam', popover: { title: 'Cam', description: 'Turn video on/off.', side: 'top', align: 'center' } },
+            { element: '#btn-hands', popover: { title: 'Hands', description: 'Enable/Disable tracking.', side: 'top', align: 'center' } },
+            { element: '#btn-doodle', popover: { title: 'Doodle', description: 'Draw anywhere on screen.', side: 'top', align: 'center' } },
+            { element: '#btn-clear', popover: { title: 'Clear', description: 'Wipe the board clean.', side: 'top', align: 'center' } },
+            { element: '#btn-role', popover: { title: 'Role', description: 'Switch between X and O.', side: 'top', align: 'center' } },
+            { element: '#btn-invite', popover: { title: 'Invite', description: 'Share room link.', side: 'top', align: 'center' } },
+            { element: '#btn-end', popover: { title: 'End', description: 'Leave the session.', side: 'top', align: 'center' } },
+          ];
+
+          const activeSteps = allSteps.filter(step => document.querySelector(step.element));
+
+          if (activeSteps.length > 0) {
+            const driverObj = driver({
+              showProgress: true,
+              animate: true,
+              popoverClass: 'glass-tour-popover',
+              nextBtnText: 'Next',
+              prevBtnText: 'Previous',
+              doneBtnText: 'Done',
+              steps: activeSteps
+            });
+            driverObj.drive();
+            localStorage.setItem('hasSeenTour', 'true');
+          }
+        }, 1500);
+      }
+    }
+  }, [isLoaded]);
 
   const [isDoodleEnabled, setIsDoodleEnabled] = useState(false);
   const isDoodleEnabledRef = useRef(false);
@@ -1068,7 +1108,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           {/* Top App Bar */}
           <header className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl flex justify-between items-center px-6 py-4 shadow-2xl shadow-indigo-950/20">
             <div className="flex flex-wrap items-center gap-4">
-              <div className="text-lg font-bold tracking-tighter text-indigo-100 font-['Plus_Jakarta_Sans']">Obsidian Gaming</div>
+              <div className="text-lg font-bold tracking-tighter text-indigo-100 font-['Plus_Jakarta_Sans']">PlayOnMeet</div>
               <div className="h-4 w-[1px] bg-outline-variant/30 hidden sm:block"></div>
               <div className="flex items-center gap-2 text-indigo-200">
                 <span className="text-xs font-semibold uppercase tracking-widest opacity-80">Room: {peerId || '...'}</span>
@@ -1136,19 +1176,19 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </header>
 
           {/* Mobile-only status indicators (shown below navbar on small screens) */}
-            <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-300 sm:hidden z-50">
-              {!isInCall ? (
-                <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl">
-                  <span className="text-xs font-medium text-indigo-100 tracking-wide whitespace-nowrap">Waiting for opponent...</span>
-                </div>
-              ) : showGrid && !winner ? (
-                <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
-                  <span className="text-xs font-bold tracking-widest uppercase whitespace-nowrap" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
-                    {currentTurn === myRole ? `▶ YOUR TURN` : `WAITING...`}
-                  </span>
-                </div>
-              ) : null}
-            </div>
+          <div className="absolute top-24 left-1/2 -translate-x-1/2 pointer-events-none transition-all duration-300 sm:hidden z-50">
+            {!isInCall ? (
+              <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl">
+                <span className="text-xs font-medium text-indigo-100 tracking-wide whitespace-nowrap">Waiting for opponent...</span>
+              </div>
+            ) : showGrid && !winner ? (
+              <div className="glass-panel px-4 py-1.5 rounded-full flex items-center gap-3 border border-white/5 shadow-xl" style={{ animation: currentTurn === myRole ? 'pulse 1.5s infinite' : 'none', border: currentTurn === myRole ? '1px solid #39ff14' : '' }}>
+                <span className="text-xs font-bold tracking-widest uppercase whitespace-nowrap" style={{ color: currentTurn === myRole ? '#39ff14' : '#f0f' }}>
+                  {currentTurn === myRole ? `▶ YOUR TURN` : `WAITING...`}
+                </span>
+              </div>
+            ) : null}
+          </div>
 
           {/* Share Modal removed from inline overlay, now rendered full screen at the end of the DOM tree */}
         </>
@@ -1416,7 +1456,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
 
           {/* Timer Options Dropdown */}
           {hasStarted && showGrid && (
-            <div className="relative flex flex-col items-center gap-1 p-3 transition-transform hover:scale-110 duration-150 border-r border-white/10 mr-1 pr-5 cursor-pointer group"
+            <div id="btn-timer" className="relative flex flex-col items-center gap-1 p-3 transition-transform hover:scale-110 duration-150 border-r border-white/10 mr-1 pr-5 cursor-pointer group"
               onClick={() => setIsTimerMenuOpen(!isTimerMenuOpen)}
             >
               {/* Custom Popover Menu */}
@@ -1458,7 +1498,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           )}
 
           {/* Drawing Mode Toggle (Adapted Games button) */}
-          <button
+          <button id="btn-game-mode"
             onClick={() => setShowGrid(!showGrid)}
             className={`flex flex-col items-center gap-1 ${showGrid ? 'bg-indigo-500/20 text-indigo-100 rounded-full' : 'text-slate-400'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{showGrid ? 'videogame_asset' : 'draw'}</span>
@@ -1466,7 +1506,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </button>
 
           {/* Mic */}
-          <button
+          <button id="btn-mic"
             onClick={toggleAudio}
             className={`flex flex-col items-center gap-1 ${isAudioOn ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isAudioOn ? 'mic' : 'mic_off'}</span>
@@ -1474,7 +1514,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </button>
 
           {/* Cam */}
-          <button
+          <button id="btn-cam"
             onClick={toggleVideo}
             className={`flex flex-col items-center gap-1 ${isVideoOn ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isVideoOn ? 'videocam' : 'videocam_off'}</span>
@@ -1482,7 +1522,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </button>
 
           {/* Hand Tracking Disable */}
-          <button
+          <button id="btn-hands"
             onClick={() => setIsDrawingEnabled(!isDrawingEnabled)}
             className={`flex flex-col items-center gap-1 ${isDrawingEnabled ? 'text-slate-400' : 'text-error'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isDrawingEnabled ? 'pan_tool' : 'do_not_touch'}</span>
@@ -1490,7 +1530,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </button>
 
           {/* Doodle Outside Grid Toggle */}
-          <button
+          <button id="btn-doodle"
             onClick={() => setIsDoodleEnabled(!isDoodleEnabled)}
             className={`flex flex-col items-center gap-1 ${isDoodleEnabled ? 'bg-indigo-500/20 text-indigo-100 rounded-full' : 'text-slate-400'} p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150`}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>{isDoodleEnabled ? 'gesture' : 'draw_abstract'}</span>
@@ -1500,14 +1540,14 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           {/* Erase Board & Switch Role logic adapted into standard layout */}
           <div className="w-[1px] h-8 bg-outline-variant/20 mx-1"></div>
 
-          <button
+          <button id="btn-clear"
             onClick={handleClear}
             className="flex flex-col items-center gap-1 text-warning p-3 transition-transform hover:scale-110 active:scale-90 duration-150" style={{ color: '#ffaa00' }}>
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>mop</span>
             <span className="font-['Plus_Jakarta_Sans'] text-[10px] font-medium uppercase tracking-widest">Clear</span>
           </button>
 
-          <button
+          <button id="btn-role"
             onClick={handleRoleSwitch}
             className="flex flex-col items-center gap-1 p-3 transition-transform hover:scale-110 active:scale-90 duration-150"
             style={{ color: myRole === 'X' ? '#39ff14' : '#0ff' }}>
@@ -1518,7 +1558,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           <div className="w-[1px] h-8 bg-outline-variant/20 mx-1"></div>
 
           {/* Invite (Re-using Share Logic) */}
-          <button
+          <button id="btn-invite"
             onClick={() => setShowShareModal(!showShareModal)}
             className="flex flex-col items-center gap-1 text-slate-400 p-3 transition-transform hover:text-indigo-200 hover:scale-110 active:scale-90 duration-150">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>person_add</span>
@@ -1526,7 +1566,7 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
           </button>
 
           {/* End Call (Wait... does endCall exist? We'll conditionally show it if we have it, or fallback) */}
-          <button
+          <button id="btn-end"
             onClick={() => window.location.reload()}
             className="flex flex-col items-center gap-1 text-error p-3 transition-transform hover:bg-error/10 hover:scale-110 rounded-full active:scale-90 duration-150">
             <span className="material-symbols-outlined text-xl" style={{ fontVariationSettings: "'FILL' 0, 'wght' 400" }}>call_end</span>
