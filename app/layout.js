@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import CookieBanner from "@/components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -194,6 +195,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-surface text-on-surface">
         {children}
+        <CookieBanner />
       </body>
     </html>
   );
