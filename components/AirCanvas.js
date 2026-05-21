@@ -72,17 +72,35 @@ export default function AirCanvas({ initialName = '', initialAvatar = 'Felix', i
   const [floatingEmojis, setFloatingEmojis] = useState([]);
 
   // Invite & Player Info States — seeded from props
-  const [localName, setLocalName] = useState(initialName);
-  const [localAvatar, setLocalAvatar] = useState(initialAvatar || 'Felix');
+  const [localName, setLocalName] = useState(() => {
+    if (initialName) return initialName;
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('name') || 'Player';
+    }
+    return 'Player';
+  });
+  const [localAvatar, setLocalAvatar] = useState(() => {
+    if (initialAvatar) return initialAvatar;
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('avatar') || 'Felix';
+    }
+    return 'Felix';
+  });
   const [remoteName, setRemoteName] = useState('');
   const [remoteAvatar, setRemoteAvatar] = useState('');
   const [joinRoomId, setJoinRoomId] = useState(null);
-  const [inputRoomCode, setInputRoomCode] = useState(initialRoomCode);
+  const [inputRoomCode, setInputRoomCode] = useState(() => {
+    if (initialRoomCode) return initialRoomCode;
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('room') || '';
+    }
+    return '';
+  });
   const [showShareModal, setShowShareModal] = useState(false);
   const [showInfoMenu, setShowInfoMenu] = useState(false);
 
-  const localNameRef = useRef(initialName);
-  const localAvatarRef = useRef(initialAvatar || 'Felix');
+  const localNameRef = useRef(localName);
+  const localAvatarRef = useRef(localAvatar);
   useEffect(() => { localNameRef.current = localName; }, [localName]);
   useEffect(() => { localAvatarRef.current = localAvatar; }, [localAvatar]);
 
