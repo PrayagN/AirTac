@@ -179,6 +179,8 @@ export default function LandingPage({
             <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#how-to-play" aria-label="Learn how PlayOnMeet works">How it works</a>
             <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#genesis" aria-label="Read our story">Our Story</a>
             <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="#games" aria-label="Discover available multiplayer games">Games</a>
+            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="/blog" aria-label="Read our blog">Blog</a>
+            <a className="text-[#bcc7de] hover:text-[#c0c1ff] transition-opacity duration-300" href="/about" aria-label="About PlayOnMeet">About</a>
           </div>
           <div className="flex items-center gap-4">
             <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={openCreateModal} className="px-6 py-2 rounded-full border border-outline-variant/30 text-[#bcc7de] hover:opacity-80 transition-opacity duration-300" aria-label="Start a new game session">Start Session</motion.button>
@@ -614,6 +616,8 @@ export default function LandingPage({
             </div>
           </div>
           <div className="flex gap-8 items-center">
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/blog" aria-label="Read our blog">Blog</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/about" aria-label="About PlayOnMeet">About</a>
             <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://github.com/PrayagN/AirTac" target="_blank" rel="noopener noreferrer" aria-label="Join our community">Community</a>
             <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="Join us on Twitter">Twitter</a>
             <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://discord.com" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">Discord</a>
