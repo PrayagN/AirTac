@@ -618,10 +618,8 @@ export default function LandingPage({
           <div className="flex gap-8 items-center">
             <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/blog" aria-label="Read our blog">Blog</a>
             <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/about" aria-label="About PlayOnMeet">About</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://github.com/PrayagN/AirTac" target="_blank" rel="noopener noreferrer" aria-label="Join our community">Community</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://x.com" target="_blank" rel="noopener noreferrer" aria-label="Join us on Twitter">Twitter</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://discord.com" target="_blank" rel="noopener noreferrer" aria-label="Join our Discord">Discord</a>
-            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/contact" aria-label="Contact support">Support</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="https://github.com/PrayagN/AirTac" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository and community">GitHub</a>
+            <a className="text-[#bcc7de] hover:text-[#ddb7ff] transition-colors duration-300" href="/contact" aria-label="Contact support">Contact</a>
           </div>
         </div>
       </footer>

@@ -38,7 +38,7 @@ export default function RemoteIcebreakersGuidePage() {
             Mastering Video Call Icebreakers & Remote Energy Resets
           </h1>
           <p className="text-lg text-[#bcc7de]/80 leading-relaxed">
-            By Elena Rostova, Distributed Work Researcher & Collaboration Architect
+            By Prayag N., Creator of PlayOnMeet
           </p>
         </header>
 

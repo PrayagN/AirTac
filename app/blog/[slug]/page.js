@@ -3,11 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { blogArticles } from "@/utils/blogData";
 
-// Simple markdown-to-React parser helper
+// Enhanced markdown-to-React parser helper
 function renderMarkdown(content) {
   const lines = content.trim().split("\n");
   let inList = false;
   let listItems = [];
+  let inCodeBlock = false;
+  let codeBlockLines = [];
   const renderedElements = [];
 
   const flushList = (key) => {
@@ -25,6 +27,31 @@ function renderMarkdown(content) {
   lines.forEach((line, index) => {
     const trimmed = line.trim();
 
+    // Code Blocks
+    if (trimmed.startsWith("```")) {
+      if (inCodeBlock) {
+        renderedElements.push(
+          <pre
+            key={`code-${index}`}
+            className="bg-[#060e20] p-5 rounded-2xl border border-white/10 overflow-x-auto my-6 text-xs text-[#c0c1ff] font-mono leading-relaxed shadow-xl"
+          >
+            <code>{codeBlockLines.join("\n")}</code>
+          </pre>
+        );
+        codeBlockLines = [];
+        inCodeBlock = false;
+      } else {
+        flushList(index);
+        inCodeBlock = true;
+      }
+      return;
+    }
+
+    if (inCodeBlock) {
+      codeBlockLines.push(line);
+      return;
+    }
+
     // Horizontal Rule
     if (trimmed === "---") {
       flushList(index);
@@ -35,14 +62,14 @@ function renderMarkdown(content) {
     // Headers
     if (trimmed.startsWith("# ")) {
       flushList(index);
-      // Skip the main H1 since we render it at the top of the template
+      // Skip the main H1 since we render it in the hero header
       return;
     }
 
     if (trimmed.startsWith("## ")) {
       flushList(index);
       renderedElements.push(
-        <h2 key={index} className="text-2xl font-bold text-white tracking-tight mt-10 mb-4">
+        <h2 key={index} className="text-2xl md:text-3xl font-bold text-white tracking-tight mt-10 mb-4">
           {parseInline(trimmed.substring(3))}
         </h2>
       );
@@ -52,15 +79,48 @@ function renderMarkdown(content) {
     if (trimmed.startsWith("### ")) {
       flushList(index);
       renderedElements.push(
-        <h3 key={index} className="text-xl font-bold text-white tracking-tight mt-8 mb-3">
+        <h3 key={index} className="text-xl md:text-2xl font-bold text-white tracking-tight mt-8 mb-3">
           {parseInline(trimmed.substring(4))}
         </h3>
       );
       return;
     }
 
+    // Images: ![alt](url)
+    if (trimmed.startsWith("![") && trimmed.includes("](") && trimmed.endsWith(")")) {
+      flushList(index);
+      const alt = trimmed.substring(2, trimmed.indexOf("]("));
+      const src = trimmed.substring(trimmed.indexOf("](") + 2, trimmed.length - 1);
+      renderedElements.push(
+        <figure key={index} className="my-8 text-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className="rounded-2xl border border-white/10 w-full shadow-2xl mx-auto max-h-[460px] object-contain bg-[#060e20]"
+          />
+          {alt && <figcaption className="text-xs text-[#bcc7de]/60 mt-3 italic">{alt}</figcaption>}
+        </figure>
+      );
+      return;
+    }
+
+    // Blockquotes: > quote
+    if (trimmed.startsWith("> ")) {
+      flushList(index);
+      renderedElements.push(
+        <blockquote
+          key={index}
+          className="border-l-4 border-[#c0c1ff] pl-5 py-3 my-6 text-[#bcc7de] italic bg-white/[0.02] rounded-r-2xl text-base leading-relaxed"
+        >
+          {parseInline(trimmed.substring(2))}
+        </blockquote>
+      );
+      return;
+    }
+
     // Bullet Points
-    if (trimmed.startsWith("* ")) {
+    if (trimmed.startsWith("* ") || trimmed.startsWith("- ")) {
       inList = true;
       listItems.push(
         <li key={`li-${index}`} className="leading-relaxed">
@@ -70,24 +130,14 @@ function renderMarkdown(content) {
       return;
     }
 
-    if (trimmed.startsWith("- ")) {
-      inList = true;
-      listItems.push(
-        <li key={`li-${index}`} className="leading-relaxed">
-          {parseInline(trimmed.substring(2))}
-        </li>
-      );
-      return;
-    }
-
-    // Numbered lists or other prefixes
+    // Numbered lists
     if (trimmed.match(/^\d+\.\s/)) {
       flushList(index);
       const content = trimmed.replace(/^\d+\.\s/, "");
       renderedElements.push(
-        <div key={index} className="flex gap-3 my-4">
-          <span className="font-black text-[#c0c1ff]">{trimmed.match(/^\d+/)[0]}.</span>
-          <p className="text-[#bcc7de]/90 leading-relaxed">{parseInline(content)}</p>
+        <div key={index} className="flex gap-3 my-3">
+          <span className="font-black text-[#c0c1ff] shrink-0">{trimmed.match(/^\d+/)[0]}.</span>
+          <p className="text-[#bcc7de]/90 leading-relaxed text-base">{parseInline(content)}</p>
         </div>
       );
       return;
@@ -108,13 +158,23 @@ function renderMarkdown(content) {
     );
   });
 
-  // Flush any remaining lists
+  // Flush any remaining lists or code blocks
   flushList("final");
+  if (inCodeBlock && codeBlockLines.length > 0) {
+    renderedElements.push(
+      <pre
+        key="code-final"
+        className="bg-[#060e20] p-5 rounded-2xl border border-white/10 overflow-x-auto my-6 text-xs text-[#c0c1ff] font-mono leading-relaxed"
+      >
+        <code>{codeBlockLines.join("\n")}</code>
+      </pre>
+    );
+  }
 
   return renderedElements;
 }
 
-// Simple inline styling parsing (handles bold **, italic *, code \`\`)
+// Inline styling parser (handles bold **, code `, italic *, links [text](url))
 function parseInline(text) {
   const parts = [];
   let remaining = text;
@@ -122,8 +182,8 @@ function parseInline(text) {
   while (remaining) {
     const boldIndex = remaining.indexOf("**");
     const codeIndex = remaining.indexOf("`");
+    const linkIndex = remaining.indexOf("[");
 
-    // Check which markup comes first
     let firstMarkup = null;
     let firstIndex = Infinity;
 
@@ -134,6 +194,14 @@ function parseInline(text) {
     if (codeIndex !== -1 && codeIndex < firstIndex) {
       firstMarkup = "code";
       firstIndex = codeIndex;
+    }
+    if (linkIndex !== -1 && linkIndex < firstIndex) {
+      const closeBracket = remaining.indexOf("]", linkIndex);
+      const openParen = remaining.indexOf("(", closeBracket);
+      if (closeBracket !== -1 && openParen === closeBracket + 1) {
+        firstMarkup = "link";
+        firstIndex = linkIndex;
+      }
     }
 
     if (firstMarkup === null) {
@@ -168,6 +236,28 @@ function parseInline(text) {
           </code>
         );
         remaining = remaining.substring(endCode + 1);
+      } else {
+        parts.push(remaining);
+        break;
+      }
+    } else if (firstMarkup === "link") {
+      const closeBracket = remaining.indexOf("]");
+      const closeParen = remaining.indexOf(")", closeBracket);
+      if (closeBracket !== -1 && closeParen !== -1) {
+        const linkText = remaining.substring(1, closeBracket);
+        const linkUrl = remaining.substring(closeBracket + 2, closeParen);
+        parts.push(
+          <a
+            key={remaining}
+            href={linkUrl}
+            target={linkUrl.startsWith("http") ? "_blank" : undefined}
+            rel={linkUrl.startsWith("http") ? "noopener noreferrer" : undefined}
+            className="text-[#c0c1ff] underline underline-offset-4 hover:text-[#ddb7ff] font-semibold transition-colors"
+          >
+            {linkText}
+          </a>
+        );
+        remaining = remaining.substring(closeParen + 1);
       } else {
         parts.push(remaining);
         break;
@@ -222,8 +312,37 @@ export default async function BlogPostPage({ params }) {
     notFound();
   }
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": article.title,
+    "description": article.excerpt,
+    "author": {
+      "@type": "Person",
+      "name": "Prayag N.",
+      "url": "https://www.playonmeet.com/about",
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "PlayOnMeet",
+      "url": "https://www.playonmeet.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.playonmeet.com/og-image.png",
+      },
+    },
+    "datePublished": new Date(article.date).toISOString(),
+    "mainEntityOfPage": `https://www.playonmeet.com/blog/${article.slug}`,
+  };
+
   return (
     <div className="bg-[#0a0a0b] text-[#bcc7de] min-h-screen font-['Plus_Jakarta_Sans'] selection:bg-primary/30">
+      {/* Article Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+
       {/* Navbar */}
       <nav className="fixed top-0 w-full z-50 bg-[#0a0a0b]/60 backdrop-blur-xl border-b border-white/5 py-5 px-8">
         <div className="max-w-3xl mx-auto flex justify-between items-center">
@@ -248,7 +367,7 @@ export default async function BlogPostPage({ params }) {
               href="/blog" 
               className="inline-block px-3 py-1 mb-6 rounded-full bg-[#c0c1ff]/10 border border-[#c0c1ff]/20 text-[#c0c1ff] font-bold text-xs tracking-wider uppercase hover:bg-[#c0c1ff]/20 transition-all"
             >
-              Blog Article
+              Engineering &amp; Insights
             </Link>
             <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-6 leading-tight">
               {article.title}
@@ -257,7 +376,7 @@ export default async function BlogPostPage({ params }) {
             {/* Author / Date Info */}
             <div className="flex items-center gap-4 text-sm text-[#bcc7de]/60 border-y border-white/5 py-4">
               <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center font-bold text-white text-xs">
-                {article.author.split(" ").map(n => n[0]).join("")}
+                {article.author.split(" ").map((n) => n[0]).join("")}
               </div>
               <div>
                 <div className="font-bold text-white text-sm">{article.author}</div>

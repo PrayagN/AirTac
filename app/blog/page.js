@@ -3,8 +3,9 @@ import Link from "next/link";
 import { blogArticles } from "@/utils/blogData";
 
 export const metadata = {
-  title: "Remote Team Building Blog",
-  description: "Read articles and insights about virtual team building, interactive webcam gaming, and next-generation remote culture.",
+  title: "PlayOnMeet Engineering & Design Blog",
+  description:
+    "Technical articles, game theory analysis, and design notes on browser computer vision, WebRTC multiplayer, and gesture interaction by Prayag N.",
 };
 
 export default function BlogHub() {
@@ -28,23 +29,23 @@ export default function BlogHub() {
       {/* Hero */}
       <header className="pt-36 pb-12 px-8 max-w-5xl mx-auto text-center">
         <span className="inline-block px-4 py-1.5 mb-4 rounded-full bg-primary/10 border border-primary/20 text-primary font-medium text-xs tracking-widest uppercase">
-          Team Building & Tech
+          Engineering &amp; Product Notes
         </span>
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-4 leading-tight">
-          The PlayOnMeet <span className="playonmeet-gradient">Hub</span>
+          The PlayOnMeet <span className="playonmeet-gradient">Blog</span>
         </h1>
         <p className="text-[#bcc7de]/70 text-lg max-w-xl mx-auto">
-          Insights, guides, and articles about remote collaboration, camera-gesture tracking, and building high-morale remote teams.
+          Deep-dives into browser computer vision, WebRTC synchronization, game theory, and product design by creator Prayag N.
         </p>
       </header>
 
-      {/* Main Grid */}
+      {/* Main Grid: 2x2 for 4 curated articles */}
       <main className="pb-24 px-8 max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
           {blogArticles.map((article) => (
             <article 
               key={article.slug}
-              className="glass-panel p-8 rounded-[2rem] border border-white/5 hover:border-[#c0c1ff]/25 transition-all duration-300 flex flex-col justify-between bg-[#0b1326]/30 backdrop-blur-md group hover:-translate-y-1"
+              className="glass-panel p-8 md:p-10 rounded-[2rem] border border-white/5 hover:border-[#c0c1ff]/25 transition-all duration-300 flex flex-col justify-between bg-[#0b1326]/30 backdrop-blur-md group hover:-translate-y-1"
             >
               <div>
                 {/* Meta */}
@@ -55,7 +56,7 @@ export default function BlogHub() {
                 </div>
 
                 {/* Title */}
-                <h2 className="text-xl font-bold text-white tracking-tight mb-3 group-hover:text-[#c0c1ff] transition-colors leading-snug">
+                <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight mb-4 group-hover:text-[#c0c1ff] transition-colors leading-snug">
                   <Link href={`/blog/${article.slug}`}>
                     {article.title}
                   </Link>
@@ -68,8 +69,11 @@ export default function BlogHub() {
               </div>
 
               {/* Author and CTA */}
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <span className="text-xs font-medium text-[#bcc7de]/50">
+              <div className="flex items-center justify-between pt-5 border-t border-white/5">
+                <span className="text-xs font-semibold text-[#bcc7de]/60 flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-white/10 text-white font-bold flex items-center justify-center text-[10px]">
+                    {article.author.split(" ").map(n => n[0]).join("")}
+                  </span>
                   By {article.author}
                 </span>
                 <Link 
@@ -91,10 +95,11 @@ export default function BlogHub() {
       <footer className="border-t border-white/5 py-12 text-center text-xs text-[#bcc7de]/50">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center px-8 gap-6">
           <div className="flex flex-col gap-1 items-center md:items-start">
-            <span className="font-bold text-white tracking-tight">PlayOnMeet Blog</span>
-            <span>Connecting distributed teams through play.</span>
+            <span className="font-bold text-white tracking-tight">PlayOnMeet</span>
+            <span>Zero-download gesture gaming for video meetings.</span>
           </div>
           <div className="flex gap-6">
+            <Link href="/about" className="hover:text-[#c0c1ff] transition-colors">About</Link>
             <Link href="/privacy-policy" className="hover:text-[#c0c1ff] transition-colors">Privacy Policy</Link>
             <Link href="/terms-of-service" className="hover:text-[#c0c1ff] transition-colors">Terms of Service</Link>
             <Link href="/contact" className="hover:text-[#c0c1ff] transition-colors">Contact</Link>

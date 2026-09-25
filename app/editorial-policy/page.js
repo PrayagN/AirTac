@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata = {
   title: "Editorial Policy & Content Standards — PlayOnMeet",
   description:
-    "Our commitment to high-value content, human editorial review, expert authorship, mathematical accuracy, privacy integrity, and Google AdSense publisher compliance.",
+    "Our commitment to original, first-hand technical content, implementation accuracy, privacy integrity, and Google AdSense publisher compliance.",
 };
 
 export default function EditorialPolicyPage() {
@@ -36,7 +36,7 @@ export default function EditorialPolicyPage() {
             Editorial Policy & Content Quality Standards
           </h1>
           <p className="text-lg text-[#bcc7de]/80 leading-relaxed">
-            PlayOnMeet is dedicated to producing authoritative, human-reviewed, and high-utility content across game theory, computer vision engineering, and remote team dynamics.
+            PlayOnMeet is dedicated to producing original, first-hand, and high-utility content across browser computer vision engineering, game theory, and video call collaboration.
           </p>
         </header>
 
@@ -47,12 +47,12 @@ export default function EditorialPolicyPage() {
               1. Our E-E-A-T Commitment
             </h2>
             <p className="text-sm text-[#bcc7de]/80">
-              In accordance with Google&apos;s Search Quality Rater Guidelines and Helpful Content System, every article, guide, and manual published on PlayOnMeet is created by experienced subject-matter experts in mathematics, computer science, and organizational psychology.
+              In accordance with Google&apos;s Search Quality Rater Guidelines and Helpful Content System, every article, guide, and technical post published on PlayOnMeet is written directly by the creator, detailing real implementation architectures, game mechanics, and first-hand engineering benchmarks.
             </p>
             <ul className="list-disc pl-6 space-y-2 text-sm text-[#bcc7de]/80">
               <li><strong>Originality:</strong> We do not publish automated, scraped, or low-value derivative content.</li>
-              <li><strong>Fact-Checking:</strong> Algorithmic formulas, game theory state spaces, and browser benchmarks are rigorously verified prior to publication.</li>
-              <li><strong>Author Transparency:</strong> Every article displays full author attribution, qualifications, and revision history.</li>
+              <li><strong>Fact-Checking:</strong> Algorithmic formulas, game theory state spaces, and browser benchmarks are rigorously verified against working code.</li>
+              <li><strong>Author Transparency:</strong> All content is authored directly by founder and developer Prayag N., documenting real product mechanics and client-side engineering.</li>
             </ul>
           </section>
 
@@ -84,12 +84,12 @@ export default function EditorialPolicyPage() {
 
         {/* Contact CTA */}
         <div className="text-center pt-6">
-          <p className="text-sm text-[#bcc7de]/60 mb-4">Have questions about our editorial standards or wish to submit feedback?</p>
+          <p className="text-sm text-[#bcc7de]/60 mb-4">Have questions about our project or wish to submit feedback?</p>
           <Link
             href="/contact"
             className="px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white text-xs font-bold hover:bg-white/10 hover:border-[#c0c1ff]/30 transition-all inline-flex items-center gap-2"
           >
-            Contact Editorial Team
+            Contact PlayOnMeet
           </Link>
         </div>
       </main>

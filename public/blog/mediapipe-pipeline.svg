@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 480" width="100%" height="100%" style="background:#060e20; font-family:'Plus Jakarta Sans', system-ui, sans-serif;">
+  <defs>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c0c1ff"/>
+      <stop offset="100%" stop-color="#ddb7ff"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#171f33" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0b1326" stop-opacity="0.9"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Title & Subtitle -->
+  <text x="480" y="48" fill="#ffffff" font-size="20" font-weight="800" text-anchor="middle" letter-spacing="-0.5">PLAYONMEET IN-BROWSER COMPUTER VISION PIPELINE</text>
+  <text x="480" y="74" fill="#bcc7de" font-size="13" text-anchor="middle" fill-opacity="0.7">100% Client-Side WebAssembly Machine Learning • 30+ FPS • Zero Cloud Video Ingestion</text>
+
+  <!-- Stage 1: Webcam Input -->
+  <g transform="translate(40, 110)">
+    <rect width="240" height="290" rx="16" fill="url(#cardGrad)" stroke="#c0c1ff" stroke-opacity="0.2" stroke-width="1.5"/>
+    <rect x="16" y="16" width="40" height="40" rx="10" fill="#c0c1ff" fill-opacity="0.1"/>
+    <text x="36" y="42" fill="#c0c1ff" font-size="18" text-anchor="middle">📷</text>
+    <text x="68" y="38" fill="#ffffff" font-size="15" font-weight="700">1. Video Capture</text>
+    <text x="68" y="52" fill="#bcc7de" font-size="11" fill-opacity="0.6">navigator.mediaDevices</text>
+    
+    <rect x="16" y="76" width="208" height="110" rx="10" fill="#0b1326" stroke="#464555" stroke-opacity="0.4"/>
+    <circle cx="120" cy="131" r="32" fill="#c0c1ff" fill-opacity="0.05" stroke="#c0c1ff" stroke-opacity="0.3" stroke-dasharray="3 3"/>
+    <text x="120" y="136" fill="#c0c1ff" font-size="12" font-weight="600" text-anchor="middle">720p @ 30 FPS</text>
+    
+    <text x="20" y="210" fill="#bcc7de" font-size="11.5" font-weight="600">Native Canvas Stream</text>
+    <text x="20" y="230" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• requestVideoFrameCallback()</text>
+    <text x="20" y="248" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Zero network transmission</text>
+    <text x="20" y="266" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Frame isolated to tab RAM</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path d="M 292 255 L 348 255" stroke="#c0c1ff" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="352,255 344,250 344,260" fill="#c0c1ff"/>
+
+  <!-- Stage 2: MediaPipe WASM Inference -->
+  <g transform="translate(360, 110)">
+    <rect width="250" height="290" rx="16" fill="url(#cardGrad)" stroke="#c0c1ff" stroke-opacity="0.4" stroke-width="2"/>
+    <rect x="16" y="16" width="40" height="40" rx="10" fill="#5d60eb" fill-opacity="0.2"/>
+    <text x="36" y="42" fill="#c0c1ff" font-size="18" text-anchor="middle">🧠</text>
+    <text x="68" y="38" fill="#ffffff" font-size="15" font-weight="700">2. MediaPipe WASM</text>
+    <text x="68" y="52" fill="#bcc7de" font-size="11" fill-opacity="0.6">Google Tasks-Vision</text>
+
+    <!-- 21 Landmark Hand Diagram Mockup -->
+    <rect x="16" y="76" width="218" height="110" rx="10" fill="#0b1326" stroke="#5d60eb" stroke-opacity="0.4"/>
+    <!-- Wrist -->
+    <circle cx="125" cy="170" r="4" fill="#c0c1ff"/>
+    <!-- Thumb -->
+    <line x1="125" y1="170" x2="95" y2="150" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.5"/>
+    <circle cx="95" cy="150" r="3" fill="#c0c1ff"/>
+    <line x1="95" y1="150" x2="80" y2="130" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.5"/>
+    <circle cx="80" cy="130" r="4" fill="#ddb7ff" filter="url(#glow)"/>
+    <text x="60" y="125" fill="#ddb7ff" font-size="9" font-weight="700">#4 Thumb</text>
+    <!-- Index Finger -->
+    <line x1="125" y1="170" x2="115" y2="135" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.5"/>
+    <circle cx="115" cy="135" r="3" fill="#c0c1ff"/>
+    <line x1="115" y1="135" x2="110" y2="98" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.5"/>
+    <circle cx="110" cy="98" r="5" fill="#c0c1ff" filter="url(#glow)"/>
+    <text x="110" y="90" fill="#c0c1ff" font-size="9" font-weight="700" text-anchor="middle">#8 Index Tip</text>
+    <!-- Other fingers -->
+    <line x1="125" y1="170" x2="135" y2="130" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.3"/>
+    <line x1="135" y1="130" x2="135" y2="105" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.3"/>
+    <line x1="125" y1="170" x2="150" y2="135" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.3"/>
+    <line x1="150" y1="135" x2="155" y2="112" stroke="#c0c1ff" stroke-width="1.5" stroke-opacity="0.3"/>
+    
+    <text x="20" y="210" fill="#c0c1ff" font-size="11.5" font-weight="700">21 3D Landmarks Extracted</text>
+    <text x="20" y="230" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Palm detector + mesh regressor</text>
+    <text x="20" y="248" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• SIMD accelerated execution</text>
+    <text x="20" y="266" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Sub-15ms inference latency</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path d="M 622 255 L 668 255" stroke="#c0c1ff" stroke-width="2" stroke-dasharray="4 4"/>
+  <polygon points="672,255 664,250 664,260" fill="#c0c1ff"/>
+
+  <!-- Stage 3: Gesture Engine & Peer Sync -->
+  <g transform="translate(680, 110)">
+    <rect width="240" height="290" rx="16" fill="url(#cardGrad)" stroke="#c0c1ff" stroke-opacity="0.2" stroke-width="1.5"/>
+    <rect x="16" y="16" width="40" height="40" rx="10" fill="#ddb7ff" fill-opacity="0.1"/>
+    <text x="36" y="42" fill="#ddb7ff" font-size="18" text-anchor="middle">⚡</text>
+    <text x="68" y="38" fill="#ffffff" font-size="15" font-weight="700">3. Action & P2P</text>
+    <text x="68" y="52" fill="#bcc7de" font-size="11" fill-opacity="0.6">Canvas + PeerJS</text>
+
+    <rect x="16" y="76" width="208" height="110" rx="10" fill="#0b1326" stroke="#464555" stroke-opacity="0.4"/>
+    <rect x="36" y="92" width="168" height="26" rx="6" fill="#5d60eb" fill-opacity="0.3"/>
+    <text x="120" y="109" fill="#c0c1ff" font-size="10.5" font-weight="700" text-anchor="middle">Pinch: dist(#4, #8) &lt; 0.05</text>
+    <rect x="36" y="126" width="168" height="26" rx="6" fill="#ddb7ff" fill-opacity="0.2"/>
+    <text x="120" y="143" fill="#ddb7ff" font-size="10.5" font-weight="700" text-anchor="middle">WebRTC DataChannel P2P</text>
+    
+    <text x="20" y="210" fill="#bcc7de" font-size="11.5" font-weight="600">Real-Time Interaction</text>
+    <text x="20" y="230" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Air Drawing stroke rendering</text>
+    <text x="20" y="248" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Grid tile selection & commit</text>
+    <text x="20" y="266" fill="#bcc7de" font-size="10.5" fill-opacity="0.7">• Direct P2P sync &lt; 40ms</text>
+  </g>
+
+  <!-- Bottom Privacy Badge -->
+  <g transform="translate(280, 424)">
+    <rect width="400" height="32" rx="16" fill="#c0c1ff" fill-opacity="0.08" stroke="#c0c1ff" stroke-opacity="0.2"/>
+    <text x="200" y="21" fill="#c0c1ff" font-size="11" font-weight="700" text-anchor="middle">🔒 PRIVACY GUARANTEE: CAMERA FEED NEVER LEAVES BROWSER MEMORY</text>
+  </g>
+</svg>

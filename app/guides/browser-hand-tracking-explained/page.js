@@ -38,7 +38,7 @@ export default function BrowserHandTrackingGuidePage() {
             How Browser Computer Vision Works: MediaPipe, WASM & WebRTC
           </h1>
           <p className="text-lg text-[#bcc7de]/80 leading-relaxed">
-            By Leon Vasquez, Principal WebAssembly Engineer at PlayOnMeet
+            By Prayag N., Creator of PlayOnMeet
           </p>
         </header>
 

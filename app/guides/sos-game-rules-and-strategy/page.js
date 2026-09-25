@@ -38,7 +38,7 @@ export default function SOSRulesGuidePage() {
             The Ultimate SOS Game Rules & Winning Strategy Guide
           </h1>
           <p className="text-lg text-[#bcc7de]/80 leading-relaxed">
-            By Dr. Priya Nair, Game Theory Specialist & Senior Algorithmic Contributor at PlayOnMeet
+            By Prayag N., Creator of PlayOnMeet
           </p>
         </header>
 
