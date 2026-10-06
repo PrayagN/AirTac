@@ -192,15 +192,7 @@ export default function AboutPage() {
                 educators, and online friends looking for a more embodied way to connect.
               </p>
               <div className="flex gap-4 mt-4">
-                <a
-                  href="https://github.com/PrayagN/AirTac"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-[#c0c1ff] hover:border-[#c0c1ff]/30 transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[16px]">code</span>
-                  GitHub
-                </a>
+
                 <Link
                   href="/contact"
                   className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm font-semibold text-[#bcc7de] hover:border-[#c0c1ff]/30 hover:text-[#c0c1ff] transition-colors"
